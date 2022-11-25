@@ -1,0 +1,37 @@
+\documentclass[
+	%% Options:
+	en, 				% Language [DE|EN]
+	sans,				% Font without serif (like Arial), serif font is default
+%	lit/refs_gpp.bib 	% Path to literature bib.-file 
+%	./figures/			% Path to figures folder
+	]{WZLtemplate}
+
+
+\bibliography{lit/refs.bib}
+
+\graphicspath{{./03_figures/}}
+\usepackage{booktabs}
+
+\begin{document}
+
+\includepdf[pages=1]{02_documents/deckblattundformularlogoverwendung.pdf}
+\include{02_documents/Themenstellung}
+
+\include{frontmatter}
+
+%Here you can include your chapters, as shown
+\include{01_chapters/ch1-intro}
+\include{01_chapters/ch2-theory}
+
+%% Proposed chapters:
+%\include{01_chapters/Einleitung} 
+%\include{01_chapters/Stand_der_Technik}
+%\include{01_chapters/Versuchsplanung}
+%\include{01_chapters/Versuchsdurchführung}
+%\include{01_chapters/Diskussion_der_Ergebnisse}
+%\include{01_chapters/Zusammenfassung_und_Ausblick}
+
+\include{literature}
+%\include{appendix}
+
+\end{document}
