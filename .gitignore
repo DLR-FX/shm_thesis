@@ -1,3 +1,5 @@
+*.idea
+
 # https://www.toptal.com/developers/gitignore can generate .gitignore for many filetypes
 
 *.acn
