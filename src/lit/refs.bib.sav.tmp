@@ -1,0 +1,132 @@
+﻿% This file was created with Citavi 6.14.0.0
+
+@proceedings{.2013,
+ year = {2013},
+ title = {2013 American Control Conference},
+ publisher = {IEEE},
+ isbn = {978-1-4799-0178-4}
+}
+
+
+@article{Perhinschi.2010,
+ abstract = {Journal of Aircraft 2010.47:1847-1859},
+ author = {Perhinschi, Mario G. and Moncayo, Hever and Davis, Jennifer},
+ year = {2010},
+ title = {Integrated Framework for Artificial Immunity-Based Aircraft Failure Detection, Identification, and Evaluation},
+ keywords = {Actuators;Aircrafts;Artificial Immune System;Dynamic Response;Fault Detection;Flight Envelope;Flight Simulation;Pilot;Sensors;Structural Element},
+ pages = {1847--1859},
+ volume = {47},
+ number = {6},
+ issn = {0021-8669},
+ journal = {Journal of Aircraft},
+ doi = {\url{10.2514/1.45718}},
+ file = {[Per10]Integrated Framework for Artificial Immunity-Based Aircraft Failure Detection, Identification and Evaluation:Attachments/[Per10]Integrated Framework for Artificial Immunity-Based Aircraft Failure Detection, Identification and Evaluation.pdf:application/pdf}
+}
+
+
+@article{PalanthandalamMadapusi.2010,
+ author = {Palanthandalam-Madapusi, Harish J. and {van Pelt}, Tobin H. and Bernstein, Dennis S.},
+ year = {2010},
+ title = {Parameter consistency and quadratically constrained errors-in-variables least-squares identification},
+ pages = {862--877},
+ volume = {83},
+ number = {4},
+ issn = {0020-7179},
+ journal = {International Journal of Control},
+ doi = {\url{10.1080/00207170903470666}},
+ file = {[Pal10]Parameter consistency and quadratically constrained errors in variables least squares identification:Attachments/[Pal10]Parameter consistency and quadratically constrained errors in variables least squares identification.pdf:application/pdf}
+}
+
+
+@inproceedings{Lum.2010,
+ author = {Lum, Kai-Yew and Xu, Jun and Loh, Ai-Poh},
+ title = {Hammerstein Model-Based Correlation UIO Method for Fault Detection of Nonlinear Flight Control Systems},
+ publisher = {{American Institute of Aeronautics and Astronautics}},
+ isbn = {978-1-60086-962-4},
+ booktitle = {AIAA Guidance, Navigation, and Control Conference},
+ year = {2010},
+ address = {Reston, Virigina},
+ doi = {\url{10.2514/6.2010-8155}},
+ file = {[Lum10]Hammerstein Model-Based Correlation UIO Method for Fault Detection of Nonlinear Flight Control Systems:Attachments/[Lum10]Hammerstein Model-Based Correlation UIO Method for Fault Detection of Nonlinear Flight Control Systems.pdf:application/pdf}
+}
+
+
+@article{Li.2015,
+ abstract = {BACKGROUND
+
+Parameter estimation represents one of the most significant challenges in systems biology. This is because biological models commonly contain a large number of parameters among which there may be functional interrelationships, thus leading to the problem of non-identifiability. Although identifiability analysis has been extensively studied by analytical as well as numerical approaches, systematic methods for remedying practically non-identifiable models have rarely been investigated.
+
+RESULTS
+
+We propose a simple method for identifying pairwise correlations and higher order interrelationships of parameters in partially observed linear dynamic models. This is made by derivation of the output sensitivity matrix and analysis of the linear dependencies of its columns. Consequently, analytical relations between the identifiability of the model parameters and the initial conditions as well as the input functions can be achieved. In the case of structural non-identifiability, identifiable combinations can be obtained by solving the resulting homogenous linear equations. In the case of practical non-identifiability, experiment conditions (i.e. initial condition and constant control signals) can be provided which are necessary for remedying the non-identifiability and unique parameter estimation. It is noted that the approach does not consider noisy data. In this way, the practical non-identifiability issue, which is popular for linear biological models, can be remedied. Several linear compartment models including an insulin receptor dynamics model are taken to illustrate the application of the proposed approach.
+
+CONCLUSIONS
+
+Both structural and practical identifiability of partially observed linear dynamic models can be clarified by the proposed method. The result of this method provides important information for experimental design to remedy the practical non-identifiability if applicable. The derivation of the method is straightforward and thus the algorithm can be easily implemented into a software packet.},
+ author = {Li, Pu and Vu, Quoc Dong},
+ year = {2015},
+ title = {A simple method for identifying parameter correlations in partially observed linear dynamic models},
+ keywords = {Algorithms;Experimental design;Identifiability analysis;Linear model;Linear Models;Parameter correlation;Parameter estimation;Receptor, Insulin/metabolism;Remedy of non-identifiability;Systems Biology/methods},
+ pages = {92},
+ volume = {9},
+ journal = {BMC systems biology},
+ doi = {\url{10.1186/s12918-015-0234-3}},
+ file = {[Li15]A simple method for identifying parameter correlations in partially observed linear dynamic models:Attachments/[Li15]A simple method for identifying parameter correlations in partially observed linear dynamic models.pdf:application/pdf}
+}
+
+
+@article{kornecka.,
+ author = {kornecka},
+ title = {SEA04Kornecki{\_}436-021.doc},
+ file = {[Kor04]Approaches to assure safety in fly-by-wire systems airbus vs boeing:Attachments/[Kor04]Approaches to assure safety in fly-by-wire systems airbus vs boeing.pdf:application/pdf}
+}
+
+
+@inproceedings{Khalil.2022,
+ abstract = {2022 American Control Conference (ACC);2022; ; ;10.23919/ACC53348.2022.9867203},
+ author = {Khalil, Abdelrahman and Aljanaideh, Khaled F. and {Al Janaideh}, Mohammad},
+ title = {Transmissibility-based Fault Detection in Systems with Unknown Time-Varying Parameters},
+ pages = {1947--1951},
+ publisher = {IEEE},
+ isbn = {978-1-6654-5196-3},
+ booktitle = {2022 American Control Conference (ACC)},
+ year = {2022},
+ doi = {\url{10.23919/ACC53348.2022.9867203}},
+ file = {[Alj22]Transmissibility-based{\_}Fault{\_}Detection{\_}in{\_}Systems{\_}with{\_}Unknown{\_}Time-Varying{\_}Parameters:Attachments/[Alj22]Transmissibility-based{\_}Fault{\_}Detection{\_}in{\_}Systems{\_}with{\_}Unknown{\_}Time-Varying{\_}Parameters.pdf:application/pdf}
+}
+
+
+@Article{Khalil.2022b,
+  author     = {Khalil, Abdelrahman and {Al Janaideh}, Mohammad and Aljanaideh, Khaled F. and Kundur, Deepa},
+  journal    = {IEEE Transactions on Vehicular Technology},
+  title      = {Transmissibility-Based Health Monitoring of the Future Connected Autonomous Vehicles Networks},
+  year       = {2022},
+  issn       = {0018-9545},
+  number     = {4},
+  pages      = {3633--3647},
+  volume     = {71},
+  abstract   = {IEEE Transactions on Vehicular Technology;2022;71;4;10.1109/TVT.2022.3151326},
+  doi        = {\url{10.1109/TVT.2022.3151326}},
+  file       = {[Alj22]Transmissibility-Based{\_}Health{\_}Monitoring{\_}of{\_}the{\_}Future{\_}Connected{\_}Autonomous{\_}Vehicles{\_}Networks:Attachments/[Alj22]Transmissibility-Based{\_}Health{\_}Monitoring{\_}of{\_}the{\_}Future{\_}Connected{\_}Autonomous{\_}Vehicles{\_}Networks.pdf:application/pdf},
+  keywords   = {Connected autonomous vehicles;Fault Detection;fault mitigation;Transmissibility},
+  readstatus = {skimmed},
+}
+
+
+@proceedings{.2011,
+ year = {2011},
+ title = {IEEE Conference on Decision and Control and European Control Conference},
+ publisher = {IEEE},
+ isbn = {978-1-61284-801-3}
+}
+
+
+@article{Harridon.2020,
+ author = {Harridon, Mohd and Rizal, Mohd},
+ year = {2020},
+ title = {Flight Profile Analysis: Finding Correlations using Scatter Plot Method and Evaluation of Scatter Plot},
+ volume = {1},
+ number = {1},
+ journal = {AVIA},
+ doi = {\url{10.47355/avia.v1i1.10}},
+ file = {[Har18]Flight Profile Analysis  Finding Correlations using Scatter Plot Method and Evaluation of Scatter Plot:Attachments/[Har18]Flight Profile Analysis  Finding Correlations using Scatter Plot Method and Evaluation of Scatter Plot.pdf:application

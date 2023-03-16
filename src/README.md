@@ -1,3 +1,22 @@
+# SENSOR HEALTH MONITORING
+## master thesis
+
+<iframe width="100%" height="800" src="D:\working_dir\MA\ma-thesis\out\main.pdf">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # WZL Latex 
 *Template, requirements, tools & tricks*  
 *Contact:* Amon Göppert (gpp)
