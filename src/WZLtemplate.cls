@@ -154,6 +154,11 @@ citecolor=black
 ]{hyperref}\RequirePackage{hyperref}
 \renewcommand{\theHchapter}{\arabic{chapter}\thechapter}
 
+%% add command for equation descriptions
+\newenvironment{conditions}
+  {\par\vspace{\abovedisplayskip}\noindent\begin{tabular}{>{$}l<{$} @{${}={}$} l}}
+  {\end{tabular}\par\vspace{\belowdisplayskip}}
+
 %% Add acronyms
 %TODO comment nolist
 \RequirePackage[
