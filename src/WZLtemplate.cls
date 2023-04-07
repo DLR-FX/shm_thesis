@@ -172,6 +172,8 @@ citecolor=black
 %% Required for including any kind of graphical images
 \RequirePackage{graphicx}
 
+\RequirePackage{subcaption}
+
 %% For absolute placement of figures and creation of vector graphics
 \RequirePackage{tikz}
 \usetikzlibrary{calc}
@@ -263,7 +265,6 @@ citecolor=black
 
 %% Avoid overfull hbox in bibliography
 \emergencystretch=1em
-
 %% No identation when a new paragraph starts
 \setlength{\parindent}{0pt}
 

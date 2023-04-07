@@ -1,48 +1,64 @@
-import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.stats import norm
 
+# Generate a sine wave with added noise and an offset
+x = np.linspace(0, 10, 1000)
+y = np.sin(x) + np.random.normal(scale=0.2, size=1000) + 0.5
 
-def statistics(ax, x, y, ):
-    y_mean = np.full(100, y.mean())
-    ax.plot(x, y, "black")
-    ax.plot(x, y_mean, "red", label=r"$\mu$")
-    ax.plot(x, y_mean - y.std(), "blue", label=r"$\mu\pm\sigma$")
-    ax.plot(x, y_mean + y.std(), "blue")
+# Calculate the mean and standard deviation of the signal
+mean = np.mean(y)
+std = np.std(y)
 
-    ax.set_xticklabels([])
-    ax.legend(loc="upper right")
-    # signal to noise ratio
-    snr = y.mean() / y.std()
-    # coefficient of variation
-    cv = y.std() / y.mean()
-    display_string = r"$SNR=" + str(snr) + r", \ \CV=" + str(cv) + r"$"
-    plt.text(60, .025, display_string)
+# Compute the histogram of the signal and normalize to obtain the PDF
+counts, edges = np.histogram(y, bins=20, density=False)
+pdf = counts / (np.sum(counts) * np.diff(edges))
 
-    return ax
+# Calculate the signal-to-noise ratio (SNR)
+snr = np.abs(mean) / std
 
+# Plot the noisy signal and save as version 1
+plt.plot(x, y)
+plt.xlabel('Time')
+plt.ylabel('Amplitude')
+plt.title('Noisy Sine Signal')
+plt.tight_layout()
+plt.grid(True)
+plt.savefig('images/statistic_functions_clean.pdf')
+plt.show()
 
-# generate random signal for a mean of 0.5
-multiplier = 3
-x = np.linspace(0, 99, 100)
-y_noise = (np.random.rand(100) - 0.5) * 2 * multiplier
-y_sin = np.sin(x / 5) * multiplier
-y_double_sin = (y_sin + np.sin((x + 10) / (2 * 4)) * multiplier) / 2
-signals = [y_noise, y_sin, y_double_sin]
+# Plot the signal with mean and standard deviation and save as version 2
+plt.plot(x, y, label='Noisy Signal')
+plt.axhline(y=mean, color='r', linestyle='-', label='Mean')
+plt.axhline(y=mean+std, color='g', linestyle='--', label='Mean + Std')
+plt.axhline(y=mean-std, color='g', linestyle='--', label='Mean - Std')
+plt.xlabel('Time')
+plt.ylabel('Amplitude')
+plt.title('Sine Signal with Mean and Standard Deviation')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.savefig('images/statistic_functions_basic.pdf')
+plt.show()
 
-fig, ax = plt.subplots()
-ax.axis("off")
-statistics(ax, x, y_noise)
-plt.savefig("images/basic_signal_0.eps", format="eps")
+# Plot the full signal with PMF and SNR and save as version 3
+fig, (ax1, ax2) = plt.subplots(1, 2, gridspec_kw={'width_ratios': [3, 1]})
+ax1.plot(x, y, label='Noisy Signal')
+ax1.axhline(y=mean, color='r', linestyle='-', label='Mean')
+ax1.axhline(y=mean+std, color='g', linestyle='--', label='Mean + Std')
+ax1.axhline(y=mean-std, color='g', linestyle='--', label='Mean - Std')
+ax1.set_xlabel('Time')
+ax1.set_ylabel('Amplitude')
+ax1.set_title('Sine Signal with Added Noise')
+ax1.legend()
+ax1.grid(True)
 
-fig, ax = plt.subplots(len(signals))
-for n, y in enumerate(signals):
-    statistics(ax[n], x, y)
+ax2.barh(edges[:-1],pdf, height=0.2, alpha=0.5, color='purple')
+ax2.set_title('Histogram')
+ax2.set_xlabel('PDF')
+ax2.set_ylabel('Amplitude')
 
-    # normal distribution
-    # plt.hist()
-    # covariance plot
-
-# save the noise plot
-
-plt.savefig("images/fundamentals_signals")
+ax1.text(0.05, 0.95, f'SNR: {snr:.2f}', transform=ax1.transAxes, ha='left', va='top')
+fig.tight_layout()
+plt.savefig('images/statistic_functions_full.pdf')
+plt.show()
