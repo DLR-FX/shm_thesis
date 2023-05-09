@@ -177,6 +177,9 @@ citecolor=black
 %% For absolute placement of figures and creation of vector graphics
 \RequirePackage{tikz}
 \usetikzlibrary{calc}
+\RequirePackage{circuitikz}
+\usetikzlibrary{shapes.geometric, arrows}
+
 
 %% Strict placement of figures, tables, etc. referring to the tex source code
 %% Usage: \begin{figure}[H]
@@ -327,6 +330,22 @@ citecolor=black
 	
 }
 
+
+\newif\ifdraft
+
+\drafttrue
+
+\ifdraft
+	\newcommand{\todo}[1]{\textcolor{purple}{[TODO] #1}}
+	\newcommand{\revised}[1]{\textcolor{blue}{[Revise] #1}}
+	\newcommand{\new}[1]{\textcolor{red}{#1}}
+	\newcommand{\modified}[1]{\textcolor{orange}{#1}}
+\else
+	\newcommand{\todo}[1]{#1}
+	\newcommand{\revised}[1]{#1}
+	\newcommand{\new}[1]{#1}
+	\newcommand{\modified}[1]{#1}
+\fi
 
 
 %% Reduce error messages for horz. & vert. overstretching of text
