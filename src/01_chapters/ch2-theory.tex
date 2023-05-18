@@ -3,62 +3,114 @@
 
 \chapter{State of the art and a theoretical Background}
 \label{chap:2}
+
 Chapter \ref{chap:2} introduces the theoretic baselines for data acquisition, data metrics as well as standardized data formats in which to save metadata.
 
-
-Topics to consider when starting the Sensor Health Monitoring process are mainly that of providing a structured overview of the Sensor Metadata which in itself consists of many layers as a dynamically generated set of metadata is desired. This should be able to accomodate changing Data Acquisitioning (DAQ) System configuration changes.
-Consideration is given to the SOIL data model and its' ability to accomodate the many demands that are expected of sensor data management. \cite{behrens_domain-specific_2021}
-The second major part to consider is that of physical crossrelations and \"deep checks\" which are a experimental mode of checking for inconsistencies among the data.
-Major research and implementation work shall go into developing a dynamic model that is generated from the data and then checks back upon the data for possible discrepancies. This approach is chosen as it is estimated to be the most structured approach for a first prototype.
-
-
-This topic shall give an overview over the state of the art technology as well as systems and describe the systems employed by this work. Structuring the data
-
-
-\begin{figure}[h]
+\begin{figure}
     \centering
-    \includegraphics[width=1\textwidth]{SensorHealthMonitoring}
-    \caption{}
-    \label{fig:shm}
+    \includegraphics[width=\textwidth]{SHM_simplified}
+    \caption{The data flow architecture proposed within this work. Starting with the configuration and dataset and finishing with a data quality report}
+    \label{fig:SHM_simplified}
+\end{figure}
+Topics to consider when starting the Sensor Health Monitoring process are mainly that of providing a structured overview of the Sensor Metadata which in itself consists of many layers as a dynamically generated set of metadata is desired. This should be able to accomodate changing Data Acquisitioning (DAQ) System configuration changes. Consideration is given to the SOIL data model and its' ability to accomodate the many demands that are expected of sensor data management. \cite{behrens_domain-specific_2021}
+
+
+The second major part to consider is that of physical crossrelations and \" deep checks \" which are a experimental mode of checking for inconsistencies among the data. Major research and implementation work shall go into developing a dynamic model that is generated from the data and then checks back upon the data for possible discrepancies. This approach is chosen as it is estimated to be the most structured approach for a first prototype.
+
+
+
+To solve this problem the infrastructure and general flow shown in figure \ref{fig:SHM_simplified} is proposed.
+
+
+
+\section{Introduction}
+
+Motivating this chapter is the desire to understand the fundamental error mechanism. Definition for errors are adopted from \textcite{isermann_fault-diagnosis_2006} defined in table \ref{tab:system_props_isermann}, the de-facto standard of Fault Diagnosis descriptions within the automation domain. Within this source errors are described as the difference between measurement and actual value as seen in figure \ref{fig:basic_error}.
+
+\newpage
+
+\subsection{What are Errors?}
+
+
+
+Sensor are used to measure reality. But how precise do they measure? No sensor is without error, an inevitable property accompanying every sensor application. In the following, sensor errors are classified into categories upon which an understanding about data quality can be built that then can describe the data quality of the ISTAR datasets.
+\begin{table}[h]
+    \centering
+    \begin{tabular}{@{}llll@{}}
+        \toprule
+        Error Type   & Systemic      & Random     & Failure    \\ \midrule
+        Appearance   & Deterministic & Stochastic & Stochastic \\
+        Occurence    & Permanent     & Permanent  & Occasional \\
+        Compensation & Calibration   & Filtering  & Mixing     \\ \bottomrule
+    \end{tabular}
+    \caption{Error Overview \cite{hartmann_navigation-sensordatenfusion_2022}}
+    \label{tab:error_types}
+\end{table}
+
+Filtering out sensor errors is the goal of this thesis. As described in figure \ref{fig:basic_error} the error can be imagined as a disturbance added upon the original sensor value. Which then results in a skewed sensor measurement.
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.5\textwidth]{basic_error}
+	\caption{Sensor Signal}
+	\label{fig:basic_error}
+\end{figure}
+
+\begin{wrapfigure}[13]{o}{0.4\textwidth}
+    \centering
+    \vspace{-20pt}
+    \includegraphics[width=0.4\textwidth]{sensor_errors_systemic}
+    \caption{Systemic Sensor Errors \cite{hartmann_navigation-sensordatenfusion_2022, din_din_1995}}
+    \label{fig:sensor_errors_systemic}
+
+\end{wrapfigure}
+In Table \ref{tab:error_types} sensor errors are divided into 3 subcategories which are classified by their appearance representing their manageability. Deterministic Errors can be easily compensated since they are reproduceable. Stochastic Errors however are non-deterministic. Figure \ref{fig:sensor_errors_systemic} gives an overview over systemic errors which generally are compensated by using calibration mechanisms in practical applications. The sensors within this work are assumed to be calibrated so this property is solely mentioned for completeness. However, perhaps some new understandings may be gained after a full SHM routine has been implemented since accuracy of calibration specifications is only as accurate as previously specified by the operator.
+
+Errors that also occur continuosly are random errors that are however unpredictable in their behaviour. To compensate those errors, filtering can be applied e.g., High- or Lowpassfilters. The final error type is Sensor failure. This is characterised as a spontaneous event that coincides with the complete interruption of the sensor information stream.
+
+
+Now the question poses if errors can be pinpointed to their origin from where such errors arise. Generally, single sensors carry inherent errors such as clogged static ports (spontaneous hysteresis) or sensor drift (spontaneous bias) but errors also occur within the complex aircraft system architecture itself. An exemplary process step is the Analog to Digital Conversion. Sensor outputs are primarily analog but are then digitized in order to get transported by the aircraft data bus. This process is accomplished using an Analog Digital Converter (ADC), effectively eliminating information from the system. The full process is shown in figure \ref{fig:signal_processing}.
+
+\paragraph{Signal Discretization}
+
+
+
+
+
+\begin{figure}[!h]
+    \centering
+    \begin{subfigure}{\textwidth}
+        \centering
+        \includegraphics[width=0.8\textwidth]{03_figures/signal_recording}
+        \caption{An exemplary pitot tube setup for measuring dynamic pressure}
+        \label{fig:signal_processing_setup}
+    \end{subfigure}
+    \begin{subfigure}{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{03_figures/python_functions/images/signal_processing_plots}
+        \caption{Original signal transformed into measured and discretized signal}
+        \label{fig:signal_processing_plots}
+    \end{subfigure}
+    \caption{Simplified, exemplary signal processing flow for measurement of a dynamic pressure for real (1), analog sensor (2) and discretized sensor (3) values}
+    \label{fig:signal_processing}
 \end{figure}
 
 
-\section{What is SHM?}
+The undisturbed system state at point 1 gets measured by a sensor and is transformed into the measured signal at point 2 with the error being represented by the orange plot. An ADC builds the next step of the signals journey and after having been digitized at point 3 the signal error grows even further.
 
--detect failures
--
+Other stochastic error mechanism include but are not limited to sensor drift as well as random noise. In the following, qualifiers and descriptors are introduced to quantify these qualities.
 
-When talking about Sensor Health Monitoring (SHM) generally one requirement is made which is to detect failures and suspicious behaviours within a system. The failures then need to be quantified to allow writing algorithms to detect them. If one had a sensor value that differed strongly from its expected values a decision needed to be made how much the sensor value differed from the expected value and where the system would receive the information from. This and further considerations are examined in the following chapter to generate a broad overview over the topic of Sensor Health Monitoring and Fault Detection.
+\subsection{Data Quality}
 
-\subsection{Scope}
-In addition to detecting faults it is also necessary for a SHM to display faults to the systems operator. This may happen in the shape of a display interface or a dashboard that generates fault and reliability ratings. Condensing information for operators is also a necessary part of SHM since suspicious occurences may be frequent and raw information about events is less helpful than already preprocessed data.
+Foundation for this work lies within a common understanding of its results. Standardized qualifiers are found within control theory \cite{isermann_fault-diagnosis_2011} as well as GNSS applications \cite{teunissen_springer_2017}. Standardization is also found within the ISO-Database. However, when beginning to describe data quality within metadata, the issue of metadata quality itself also arises. In the following, a brief overview is given over descriptors and their qualities based on norms.
 
+\
 
-%%%scope of this work
-Within this chapter various algorithms and methods that may be used to detect faults are presented first and then followed by considerations in the direction of metadata. Standards for metadata as well as new propositions are examined and the skystash architecture which is used for data hosting as well as analytic tasks is presented.
-
-
-\subsection{Requirements}
-□ Notwendig
--detect errors within previous flights.
--develop a toolchain that accesses configuration data for parameters
--find a format to communicate metadata as well as SHM findings
--develop first on a small batch size
-□ optional
--develop smarter algorithms
--include all parameters
-
-\section{Fundamentals}
-
-%\subsection{Isermann}
-Lets talk about Semantics and descriptors of data/metadata. Hence, a quick insert about semantics
-
-\subsection{Semantics}
-Semantics are defined in various way by various people. One definition that has found some acceptance is the definition by Metzlers Lexikon which relies on theories by Blackburn and Kutschera. \cite{shoemaker_spreading_1987,kutschera_sprachphilosophie_1975}
+\paragraph{Semantics}
+Semantics is a broad term due to its common use. One definition that has found some acceptance is the definition by Metzlers Lexikon which relies on theories by Blackburn and Kutschera. \cite{shoemaker_spreading_1987,kutschera_sprachphilosophie_1975}
 
 
-First off, semiotics from the greek σημεῖον, semeion for sign, describes the theory of signs and their usage. Semiotics is divided into the areas semantics, syntactics and pragmatics. Within the definition at hand syntactics is given as the internal structure of signs within sign systems, pragmatics are defined as the theory of sign usage effectively thinking about how interaction with signs works.
-Finally, semantics define the relationship between signs and described objects. They work by allocating a structure/model to a predefined expressions
+Semiotics (\textgreek{σημεῖον},semeion:sign) describes the theory of signs and their usage. Semiotics is divided into the areas semantics, syntactics and pragmatics. Within the definition at hand syntactics is given as the internal structure of signs within sign systems, pragmatics are defined as the theory of sign usage effectively thinking about how interaction with signs works. Finally, semantics define the relationship between signs and described objects. They work by allocating a structure/model to a predefined expressions
 
 \begin{figure}
     \centering
@@ -66,128 +118,29 @@ Finally, semantics define the relationship between signs and described objects. 
     \caption{Semiology, according to \textcite{kutschera_sprachphilosophie_1975} and \textcite{shoemaker_spreading_1987}}
 \end{figure}
 
+This gets developed further within ISO 8000-8: Data Quality \cite{iso_data-quality_information_2015}, concluding that syntactic qualities define the structure of the content language and semantic qualities define the structure of the content itself to allow verifying information. Whereas pragmatic qualities describe the use that can be extracted from the content itself hence allowing validation.
 
-And now to the actual semantics that have been mentioned previously:
+Contextually, the metadata syntax of this work will be in a JSON-format. The used semantics will be standardized to use the SOIL (SensOr Interfacing Language) structure and pragmatics will be quantified by the validity of the actual metadata.
 
-\subsection{Metadata descriptors}
+Moving on from these fundamental concepts, the pragmatic data qualities will be defined in the following.
+
+\paragraph{Metadata descriptors}
+
+Unambiguous terms are needed to provide clear and concise information within the sensor health monitoring data structure. This is especially important to create a common base of understanding. In the following, industry standards and definitions for data metrics are summarized.
+
+Definitions based on a control theory background are shown in table \ref{tab:system_props_isermann}. These have been agreed upon in discussion with vdi/vde committees as well as the Reliability, Availability and Maintainability (RAM) dictionary. \cite{isermann_trends_nodate,din_din25424_fehlerbaumanalysepdf_1977}
+
+These terms are divided into the contextual categories of primarily defining signal and state descriptors. Next up are functions for fault processing followed by model attributes that are employed to compare the actual system to. System properties can then be inferred by leveraging the previous descriptors for states, functions and models. Illustrating the fault detection process, figure \ref{fig:basic_error_filter} shows the method generating a residual which in turn enables interpretation of said residual which may contain information to isolate and identify the error.
 
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=1\textwidth]{basic_error_abb}
-    \caption{Sensor Signal with control systems}
-    \label{fig:basic_error_abb}
-\end{figure}
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=1\textwidth]{basic_error_filter}
+    \includegraphics[width=0.5\textwidth]{basic_error_filter}
     \caption{Sensor Signal Filter}
     \label{fig:basic_error_filter}
 \end{figure}
 
 
-Unambiguous terms are needed to provide clear information within the sensor health monitoring data structure. This is needed in regards to basic terms like semantics as well as data metrics. In the following, industry standards and definitions are collected to accompany this work.
-
-
-
-
-
-
-1What are metadata descriptors
-
-u-is the input
-x-is the system state
-y-is the sensor value
-n-noise
-
-
-2what are metadata descriptors
-
-
-No clear, fully unambiguous and precise definition exists for most of following terms. However some assumptions have been made by e.g. isermann et al[ise97] within trends and apps.. in discussion with vdi/vde committees and the reliability, availability and maintainability (RAM) dictionary. Definitions are classified as:
-
-deviation: difference to a reference value
-
-
-\begin{itemize}
-    \bfseries
-    \item states and signals (chapter \ref{chap:metadata_states})
-    \item functions (chapter \ref{chap:metadata_functions})
-    \item models (chapter \ref{chap:metadata_models})
-    \item system properties (chapter \ref{chap:metadata_system_properties})
-\end{itemize}
-
-\subsection{States and Signals}
-Basic descriptors for occurences in signals (states). Faults are definedWithin this definition it is however not clearly defined
-
-\label{chap:metadata_states}
-\begin{table}[!h]
-    \centering
-    \begin{tabular}{@{}ll@{}}
-        \toprule
-        descriptor   & description                                                                           \\ \midrule
-        fault        & unpermitted deviation of one subset of the system                                     \\
-        failure      & permanent interruption                                                                \\
-        malfunction  & intermittent regularity                                                               \\
-        disturbance  & unknown, uncontrolled input                                                           \\
-        perturbation & input, leading to temporary departure from steady state                               \\
-        error        & deviation between measurement and true, specified, theoretically correct value        \\     & $y_e = \bar{y} -y$ \\
-        residual     & fault indicator based on deviations between measurements and model-based calculations \\     & $\hat{y} = \bar{y} -y_m$ \\ \bottomrule
-    \end{tabular}
-    \caption{states and signals}
-    \label{tab:states_and_signals}
-\end{table}
-
-\subsection{functions}
-\label{chap:metadata_functions}
-\begin{table}[!h]
-    \centering
-    \begin{tabular}{@{}ll@{}}
-        \toprule
-        descriptor           & description                                                                                                     \\ \midrule
-        fault detection      & determination fault presence                                                                                    \\
-        fault isolation      & Determination fault properties: kind, location, time of detection                                               \\
-        fault identification & determination of size and time-variant behaviour of fault                                                       \\
-        fault diagnosis      & includes fault detection, isolation, identification                                                             \\
-        monitoring           & real-time determination of possible physical conditions and recognition and indication of behavioural anomalies \\
-        Supervision          & monitoring and taking actions to maintain operation during faults                                               \\
-        protection           & means by which potentially dangerous behaviours are suppressed if possible or how consequences are avoided      \\ \bottomrule
-    \end{tabular}
-    \caption{functions}
-\end{table}
-
-\subsection{models}
-\label{chap:metadata_models}
-
-\begin{table}[!h]
-    \centering
-    \begin{tabular}{@{}ll@{}}
-        \toprule
-        descriptor            & description                                                                     \\ \midrule
-        quantitative          & describe system in quantitative mathematical terms                              \\
-        qualitative           & describe system in causalities and if-then rules                                \\
-        diagnostic            & link specific inputs (symptoms) to outputs (faults)                             \\
-        analytical redundancy & determine a quantity in an additional way by using a mathematical process model \\ \bottomrule
-    \end{tabular}
-    \caption{models}
-\end{table}
-
-\subsection{system properties}
-\label{chap:metadata_system_properties}
-
-
-\begin{table}[!h]
-    \centering
-    \begin{tabular}{@{}ll@{}}
-        \toprule
-        descriptor     & description          \\ \midrule
-        MTTF=1/\lambda & Mean time to failure \\
-        \lambda        & rate of failure      \\
-        MTTR = 1/\mu   & mean time to repair  \\
-        \mu            & rate of repair       \\ \bottomrule
-    \end{tabular}
-    \caption{system properties}
-\end{table}
 
 
 
@@ -195,43 +148,80 @@ Basic descriptors for occurences in signals (states). Faults are definedWithin t
     \centering
     \begin{tabular}{@{}ll@{}}
         \toprule
-        descriptor   & description                                                                               \\ \midrule
-        reliability  & ability to perform a function, measure $MTTF$, with $\lambda$ as rate of failure per hour \\
-        safety       & ability of a system not to cause danger to persons, equipment and environment             \\
-        availability & $A=\frac{MTTF}{MTTF + MTTR}$                                                              \\ \bottomrule
+        Descriptor            & Description                                                                               \\ \midrule
+        States and Signals    &                                                                                           \\ \midrule
+        fault                 & unpermitted deviation of one subset of the system                                         \\
+        failure               & permanent interruption                                                                    \\
+        malfunction           & intermittent regularity                                                                   \\
+        disturbance           & unknown, uncontrolled input                                                               \\
+        perturbation          & input, leading to temporary departure from steady state                                   \\
+        error                 & deviation between measurement and true value                                              \\              & $y_e = \bar{y} -y$                               \\
+        residual             & deviation between measurements and model-based calculations                                                                                           \\       & $\hat{y} = \bar{y} -y_m$                                                              \\ \bottomrule
+        Functions       &                         \\ \midrule
+        fault detection  & determination fault presence                                 \\
+        fault isolation       & Determination fault properties: kind, location, time of detection                                       \\
+        fault identification            & determination of size and time-variant behaviour of fault                               \\
+        fault diagnosis           & includes fault detection, isolation, identification                         \\
+        monitoring            & real-time determination of possible physical conditions and                         \\                & recognition, indication of behavioural anomalies                                                                                           \\
+        supervision          & monitoring and taking actions to maintain operation during faults                                        \\
+        protection           & means by which potentially dangerous behaviours are suppressed if                                          \\            & possible or how consequences are avoided                                       \\ \bottomrule
+        models &           \\ \midrule
+        quantitative     & describe system in quantitative mathematical terms                                                                                           \\
+        qualitative           & describe system in causalities and if-then rules \\
+        diagnostic                & link specific inputs (symptoms) to outputs (faults)             \\
+        analytical redundancy          & determine a quantity in an additional way by using a mathematical process model                                                              \\ \bottomrule
+        system properties               &                                                                           \\ \midrule
+        reliability                   & ability to perform a function, measure $MTTF$, with $\lambda$ as rate of failure per hour                                                                            \\
+        safety        & ability of a system not to cause danger to persons, equipment and environment                                                                      \\
+        availability          & $A=\frac{MTTF}{MTTF + MTTR}$                                                                       \\ \bottomrule
+
+        \lambda          & rate of failure                                                                       \\
+        \mu          & rate of repair                                                                       \\
+        MTTF=1/\lambda          & Mean time to failure                                                                       \\
+        MTTR = 1/\mu          & mean time to repair                                                                       \\ \bottomrule
     \end{tabular}
-    \caption{system properties}
+    \label{tab:system_props_isermann}
+    \caption{Terminology for system properties  \cite{isermann_fault-diagnosis_2011}}
 \end{table}
 
 
-data quality:
-reliability (isermann)
-availability (isermann)
-accuracy
+Further definitions are also employed by the \textcite{faa_federal_radionavigation_plan_2008} adding integrity as an attribute for GNSS systems that is a quantifier for trust that can be put into the system's measurements. Providing users with warnings when measurements are expected to be unreliable. \cite[B.1.5, B.1.10]{faa_federal_radionavigation_plan_2008}
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\textwidth]{dart_boards}
+    \caption{Dart boards displaying the Precision (as $\sigma$), Trueness (as $\mu$) and Accuracy as their product \cite{iso_iso5725-1_accuracy_1997}}
+    \label{fig:dart_boards}
+\end{figure}
 
-3what are metadata descriptors
+Following the GNSS domain, the terms accuracy and precision are important measures for quantifying results. For representation, a dart board is illustrated in figure \ref{fig:dart_boards}. It is then important to distinguish that good accuracy is the result of good precision as well as a good trueness. A mathematical description for the precision could be the standard deviation and the deviation of mean and actual value as the trueness. \cite{iso_iso5725-1_accuracy_1997}\cite[S.33ff.]{smith_scientist_nodate}
 
-they need to be clearly defined as they have been now to set a common ground upon which this work can be built.
 
 %\subsection{Integrity, Reliability and Validity based on GNSS or NORMS von Lars}
-Data according to ISO 8000 cite [ISO22]
-iso5725:
--accuracy(validity)+precision(reliability)
-Also see precision and accuracy definition \cite[S.33ff.]{smith_scientist_nodate}
+%Data according to ISO 8000 cite [ISO22]
+%iso5725: -accuracy(validity)+precision(reliability)
+%Also see precision and accuracy definition
+
+
+%Validation: Black Box Testing. Results match expectations Verification: White Box Testing. Establish algorithm's truth
+
+
+\section{SHM Algorithms}
+
+Building now upon a solid foundation of descriptors, some previously implemented systems dealing with Monitoring and Supervision tasks are reviewed. The superset of these monitoring systems is generally described as Failure Mode and Effect Analysis (FMEA). In the following, some FMEA implementations are reviewed. Theoretic fundamentals for this works' actual implementation are then shown, checking sensor values against limits and then correlating sensor values with each other.
+
+\subsection{Introduction to FMEA}
+
+Motivated by the desire to warn operators of system failure the FMEA has a relatively simple goal. To detect failures and faults and alert the user to avoid further damage/costs/downtime. This naturally establishes it as one of the pillars of automation. \cite{isermann_fault-diagnosis_2006} Since automated systems are only as smart as their creator, methods have to be put into place assuring their high level of quality, guaranteeing smooth operation which in turn spawns and motivates the entire field of FMEA. In recent years, especially systems based on machine learning approaches have come into play due to widely available cheap computing power as well as increasingly optimized training algorithms. Due to the scope of this work that is primarily trying to establish a pipeline for an automated FMEA on cloud data this however remains to be addressed at a later point.
+
+
+In the following, state of the art non machine-learning approaches are introduced preceeded by a brief theoretic section on statistics for completeness. The FMEA methods then outlined feature the principal component analysis (PCA) used in live monitoring \cite{xiao_diagnostic_2006}, Pseudo Transfer Functions (PTFs) in control theory \cite{aljanaideh_aircraft_2015}, parity equations as well as grey box models using parameter tuning. \cite{isermann_fault-diagnosis_2006} In addition, some methods from the GNSS field are presented since much of GNSS research is public in contrast to most control algorithms for aircraft systems.
+
+\paragraph{Statistical methods}
 
 
 
-Other measures for various positioning systems are found in \textcite{faa_federal_radionavigation_plan_2008}. Also, similar definitions are found as defined in \textcite{isermann_fault-diagnosis_2011}
-$Reliability = 1-Probability_{Failure}$
-\cite[B.1.5]{faa_federal_radionavigation_plan_2008}
 
-B.1.10: Integrity: Display when system should not be used due to potential errors.
-
-Validation: Black Box Testing. Results match expectations
-Verification: White Box Testing. Establish algorithm's truth
-
-\subsection{Statistics}
 \cite{smith_scientist_nodate}
 \begin{figure}[h]
     \centering
@@ -262,14 +252,9 @@ Signal properties are examined for a given signal in figure \ref{fig:statistics_
 
 
 
-Sensors generally produce errors within expected forms of output.
--Noise
--Measure using Covariance --> autocovariance
--Offset
--No response
+Sensors generally produce errors within expected forms of output. -Noise -Measure using Covariance --> autocovariance -Offset -No response
 
-Statistical representation of:
-Mean
+Statistical representation of: Mean
 
 \cite[S.13-17]{smith_scientist_nodate}
 
@@ -335,281 +320,230 @@ probability mass function
 \end{equation}
 
 
-Covariance
-Zeitkontinuierliche Autokovarianzfunktion
+Covariance time-continuous
 $$
 \gamma(\tau)=\frac{1}{T} \cdot \int_T[x(t)-\mu] \cdot[x(t-\tau)-\mu] d t
 $$
-Zeitdiskrete Autokovarianzfunktion
+Covariance time-discrete
 $$
 \gamma(k)=\frac{1}{N} \cdot \sum_N\left[x_i-\mu\right] \cdot\left[x_{i-k}-\mu\right]
 $$
 
--->Autocovariance
-autocov(x,x) = cov(x,x)
+
+It follows then that the autocovariance for a variable is
+
+$$autocov(x) = cov(x,x)$$
 
 
-Correlation (Pearson coefficient)
+The Pearson coefficient as the correlation matrix is hence reached by scaling the covariance matrix by the standard deviation: \cite{smith_scientist_nodate}
 
 $$\rho_{x,y} = corr(x,y)=\frac{cov(x,y)}{\sigma_x \sigma_y}$$
 
-The maximum of a total correlation is 1 or that of a total negative correlation -1.
+With the limits of correlation being -1 for total antiproportional correlation and 1 for total correlation. A total independence for $\rho_{x,y}=0$ not given since Pearson coefficient only detects linear correlations and not nonlinear behavior. Other correlation methods as rank-correlation (Spearman, Kendall) that detect change correlations are possible but are more complex in the implementation.
 
-Total independence for $\rho_{x,y}=0$ not given since Pearson coefficient only detects linear correlations
+\subsection{Check 1: Existence}
+The FMEA procedure is divided into three steps, separating the involvement of each algorithm. Metaphorically speaking shaping the inputs and outputs of the algorithm blackbox. Primarily, it is checked whether parameters exist in the database. This is checked by comparing the DAQ-configuration to the actually measured data. Within step two, single sensor signals are examined by themselves, saving ressources by iteratively working on each sensor. This approach also allows easy parallelization of tasks due to the encapsulation of each task. Step three allows the integration and correlation of different sensor signals. Allowing more complex FMEA systems.
 
-Other correlation methods as rank-correlation (Spearman, Kendall) that detect change correlations are possible but are more complex in the implementation.
+Within the first step, the main challenge lies within the acquisition of sound configuration data. Errors may occur as early as the configuration step due to human error. This steps allows to get an overview over these first rough mistakes.
 
+\subsection{Check 2: Plausibility}
 
-\section{Signal Discretization}
+Within the plausibility check the single parameter is checked against limits that shall be preconfigured for each parameter. Various methods are examined. The primary focus is checking the value against limits to detect extreme values that are unrealistic.
 
-State values of the real system are never measured without some error. Upon measurement, sensor values are discretized by converting it to a digital signal. This happens in two steps that are presented in an exemplary setup in figure \ref{fig:signal_processing_setup}. In the first step the real state value gets converted into a sensor signal by measuring it within a pitot tube. Within this step, some white noise generally occurs. Within the second step the sensor value gets converted to a digital signal by feeding it into an Analog Digital Converter (ADC). During the ADC step a discretization error occurs. Based upon sampling rate discretization errors occur in time and value direction. After the transformation by both steps, the data series contain a white noise sensor error as well as a discretization error (see figure \ref{fig:signal_processing_plots}, Point 3). Great effort is made to avoid such errors. For sensor errors i.e. a nose boom is fitted to the aircraft to measure undisturbed stream conditions. For value and time discretization the resolution of the ADC is chosen to guarantee necessary parameter precision. An exemplary signal transforming process is shown in figure \ref{fig:signal_processing_plots}.
+Within the next step, the series shall be transformed with the noise or other attributes being extracted. These attributes can then in turn be checked against other limits.
 
-\begin{figure}[!h]
+For the noise, we examine various known methods to create a heuristic for noise approximation. Of course, noise approximation models range in complexity and detail from a simple moving window approximation into Fourier transforms (FFT, Fast-Fourier-Transform; STFT, Short-Time-Fourier-Transform), Wavelet Transform (WT) and into advanced works such as language-processing models \cite{hendriks_noise_2008} which exceed the scope of this work and may be implemented at a later date.
+
+These functions are evaluated into a ranking and displayed in Table \ref{tab:lvl2_comparison}. After brief evaluation, the Short-Time-Fourier Transform is considered due to its comparability among sensor signals. Allowing to compare movement activity by amplitude.
+
+% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+\begin{table}[]
     \centering
-    \begin{subfigure}{\textwidth}
-        \centering
-        \includegraphics[width=0.8\textwidth]{03_figures/signal_recording}
-        \caption{pitot tube setup for measuring dynamic pressure}
-        \label{fig:signal_processing_setup}
-    \end{subfigure}
-    \begin{subfigure}{\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{03_figures/python_functions/images/signal_processing_plots}
-        \caption{Original signal into measured and discretized signal}
-        \label{fig:signal_processing_plots}
-    \end{subfigure}
-    \caption{Simplified, exemplary signal processing flow for measurement of a dynamic pressure for real (1), analog sensor (2) and discretized sensor (3) values}
-    \label{fig:signal_processing}
-\end{figure}
+    \begin{tabular}{@{}lllll@{}}
+        \toprule
+        Noise algorithm:      & Moving Average & FFT & STFT & WT \\ \midrule
+        Implementation Effort & 1              & 3   & 2    & 4  \\
+        Result Quality        & 1              & 2   & 3    & 4  \\
+        Real-Time Performance & 4              & 2   & 3    & 1  \\ \bottomrule
+    \end{tabular}
+    \caption{Comparison of Level 2 Noise approximation algorithms}
+    \label{tab:lvl2_comparison}
+\end{table}
+
+The STFT algorithm is then implemented preliminary by using a short time window of 256 samples and then collapsing the resulting spectrogram by time. This results in an averaged amplitude value for each timestep that is detrended. Leading to a scalar value, upon which the noise of each value can be mapped.
+
+\subsection{Check 3: Parameter Correlation}
+Physically correlating and involving parameters into the anomaly detection of other parameter generally is the next logical step. It is primarily considered to use conventional non ML-approach using known correlations of parameters and perhaps allowing some greybox approaches for fine-tune limits and finding unknown correlation. A primary desire is to generate a model that is not hardcoded but easily expandable to satisfy various data-generators.
 
 
-The dynamic pressure in the air (denoted by 1) is ideally undisturbed and smooth for the actual state value. Within the sensor and stream close to the aircraft, the air is disturbed by the aircraft itself and also by the sensor, leading to the measured value at position 2. signal conversion from pressure to a voltage as well as discretization of the analog voltage to a digital signal is summarized within the ADC-Box since it is assumed that the errorwithin the pressure conversion is small compared to the errors within sensor and actual ADC. A sample signal conversion is shown within figure \ref{fig:signal_processing_plots}. Of course, errors are exaggerated for illustration since state of the art systems possess a far smaller level of sensor as well as ADC error.
+enter placeholder for image: Measurement equals signal + error and image: luenberger beobachter. Kalman Implementierung \cite{lie_synthetic_2013}
+Parameter Correlation Studies  \cite{li_simple_2015}
 
+Some traditional non-ML FMEA approaches are presented in the following paragraphs.
 
-All recorded sensors are present in values that are already is a process that is integral to digitally recorded sensor values.
+\subsubsection{PCA}
 
+The Principal Component Analysis was first introduced by Karl Pearson in 1901 (\cite{pearson_liii_1901}) and has since become a popular method to analyse datasets and detect correlations. The PCA works by reducing the dataset dimensions using covariance of parameters relative to each other. This results in a method that needs minimal user input but delivers a condensed data overview. The only input needed is the amount of dimensions into which data shall be condensed into, the so called Principal Components (PCs).
 
+The functionality, applications as well as usability within the context of this work are discussed below.
 
--mention data information
--information loss through discretization
+\paragraph{Functionality}
+%TODO: drastically shorten to maximum one to two pages to grasp that dimensionality reduction takes place to reduce redundant parameters
+The principal component analysis (PCA) is a method that allows to reduce the information parameters of a dataset into a few principal components or dimensions. Generally this is specified as the operation of multiplying the original dataset $X_{Nxm}$ with the timesteps $N$ and the measurement parameters $m$ with the Permutation Matrix $P_{mxr}$. This results in the transformed principal components (PC) $T_{Nxr}$ with $r$ being amount of reduced dimensions or also the number of Principal Components. This transformation is defined as:
 
-Time discretization
-value quantization
-
-
-\section{Previous works}
-
-\subsection{PCA}
-
-\subsubsection{What is PCA (Intro)}
-
-
-The principal component analysis (PCA) is a method that allows to reduce the information parameters of a dataset into a few principal components. Generally this is specified as the operation of the original dataset $X_{Nxm}$ with the timesteps $N$ and the measurement parameters $m$ into the transformed principal components (PC) $T_{Nxr}$ with $r$ being amount of PCs.
-This transformation is defined as:
-$$T_{Nxr} = X_{Nxm}  P_{mxr}$$
-with P being the permutation matrix that rotates the original data into the principal components. The overall strategy to generate a PC is shown in figure \ref{fig:pca_variance} as finding a function between two parameters $x_1$ and $x_2$ that maximizes the variance of data in the newly generated principal component. However drawbacks arise using this approach since the variance optimization only happens linearly and is not able to function for nonlinear correlations.
-
-
-
--originally to reduce dimensionality within a dataset \cite{handl_multivariate_2017}
--->extract maximum variance (see variance chapter) from dataset
-->transform onto 2 PCs
-
--Application in FMEA (Isermann, fault diag) \cite{isermann_fault-diagnosis_2006}
-->determine number of principal components
-
-\subsubsection{What is PCA again? (Detail)}
-
-%%motivation
-relative minimal input. Usable results without system knowledge. Works pretty much straight out of the box
-
-the principal component analysis is based on correlation principles and allows reduction of datasets into independent components. Applications in an aerospace context include detection of previously unknown correlations between parameters and complex interactions in aeroelastics or otherwise large datasets. It also may allow generation of rules to detect a deviation from previously correlated values. Usage however is associated with a certain effort since information needs to be preprocessed to a certain degree, reducing dimensions previous to processing in order to avoid feeding in redundant parameters. Upsides of the PCA are that it acts as a blackbox that quickly allows to reduce data onto a given set of dimensions, requiring relatively little user input.
-
-
-\begin{figure}
-    \centering
-    \includegraphics[width=0.8\textwidth]{pca_FD}
-    \caption{Known process input U as well as Sensor Measurement Y get collected into X and fed into a PCA. N indexes timesteps.\cite[p.268]{isermann_fault-diagnosis_2006}}
-    \label{fig:pca_FD}
-\end{figure}
-
-
-%%variance
-
-Generally, we want to transform the Matrix X into the transformed Matrix T containing all Principal components with the count $r<m$. To perform this operation we introduce the Permutation Matrix P leading to:
 $$T_{Nxr} = X_{Nxm}  P_{mxr}$$
 
-Full derivations are available in previously cited sources (isermann, han17). Rather more important is however, that isermann presents a process for an autotuning PCA that can be used for real-time Fault Detection applications.
+P being the permutation matrix that transform the original data into the principal components. The overall strategy to generate a PC is shown in figure \ref{fig:pca_variance} as finding a function between two parameters $x_1$ and $x_2$ that maximizes the variance of data in a newly generated principal component. However drawbacks arise using this approach since the variance optimization only happens linearly and is not able to function for nonlinear correlations similar to a standard Pearson-Coefficient Correlation matrix. \cite{handl_multivariate_2017}
 
-
-A principal component gets created by condensing two parameters in the direction of most variance to each other. This is a classical optimization problem
-
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{python_functions/images/pca_variance}
+    \caption{Parameters $x_1$ and $x_2$ get converted into principal components $t_1$ and $t_2$ by optimizing for minimal variance.}
+    \label{fig:pca_variance}
+\end{figure}
 
 %%principal component
 PCs can be created in any direction. Where input is needed however is the number of Principal components that shall be kept. A cutoff value can be defaulted to but this may not be feasible for multidimensional systems such as the flight test data that is at hand.
 
 
-\begin{figure}
-    \centering
-    \includegraphics[width=0.8\textwidth]{python_functions/images/pca_variance}
-    \caption{Parameters $x_1$ and $x_2$ get converted into principal components $t_1$ and $t_2$ by optimizing for minimal variance.}
-    \label{fig:pca_variance}
-\end{figure}
-
 Eliminating a principal component becomes easy if parameters show a direct correlation such as in figure \ref{fig:pca_variance}. The gatherings of $t_2$ then mostly consist of noise and can be safely discarded.
 
+
+
+\begin{wrapfigure}{I}{0.5\textwidth}
+    \centering
+    \includegraphics[width=0.48\textwidth]{pca_FD}
+
+    \caption{Known process input U as well as Sensor Measurement Y get collected into X and fed into a PCA. N indexes timesteps.\cite[p.268]{isermann_fault-diagnosis_2006}}
+    \label{fig:pca_FD}
+\end{wrapfigure}
+
+\paragraph{Utilization}
+
+This analysis method is especially helpful for datasets for which correlations are unknown such as biomedicine in which marker correlation needs to be identified. But even for aerospace contexts it may prove helpful for large quantities of data in which correlations are unknown e.g. for parameter identification as well as perhaps aeroelastic applications in which vast amounts of acceleration sensors and strain gauges are present.
+
+In these applications the PCA is a great tool to get a first overview over the data. For more refined analysis however it lacks detail since it generally uses linear optimization as and may be prone to overfitting for redundant input parameters. In these cases, it may be sensible to use optimized PCA approaches or an entirely different analysis system such as ML-approaches.
+
+The PCA can be defined as a condensation of a dataset into fewer parameters. The so called principal components. These principal components can also be transformed back into the original parameters. This process can also be used to create a data model and then calculate the residual to possibly quantify the error. E.g. \textcite{isermann_fault-diagnosis_2006} presents a process for an autotuning PCA FMEA that can be used for real-time Fault Detection applications.
+
+\paragraph{Assessment}
+
+%%motivation
+
+The principal component analysis is based on correlation principles and allows reduction of datasets into independent components. Applications in an aerospace context include detection of previously unknown correlations between parameters and complex interactions in aeroelastics or otherwise large datasets. It also may allow generation of rules to detect a deviation from previously correlated values. Usage however is associated with a certain effort since information needs to be preprocessed to a certain degree, reducing dimensions previous to processing in order to avoid feeding in redundant parameters. Upsides of the PCA are that it acts as a blackbox that quickly allows to reduce data onto a given set of dimensions, requiring relatively little user input.
+
+
+%%variance
+
+%Generally, we want to transform the Matrix X into the transformed Matrix T containing all Principal components with the count $r<m$. To perform this operation we introduce the Permutation Matrix P leading to:
+%$$T_{Nxr} = X_{Nxm}  P_{mxr}$$
+%A principal component gets created by condensing two parameters in the direction of most variance to each other. This is a classical optimization problem
+
+
 %%pca general analysis (plots)
-
-
 %%pca uses in fault detection
-The PCA can be defined as a condensation of a dataset into fewer parameters. The so called principal components. These principal components can also be transformed back into the original parameters. This process can also be used to create a data model and then calculate the residual to possibly quantify the error.
+
+\subsubsection{PTF}
 
 
-2. create principal components by maximizing variance
+Following the recipe for a modeled aircraft based on sensor data we try to simulate the parameters x and u of the aircraft with the sensor data y. Khaled shows that this approach works for linking the angular velocities for the aircraft axes $omega_x$, $omega_y$, $delta_delta(drift angle)$ with $omega_z$. This is accomplished by tuning the Transmissibility function $\mathcal{T}$ using dynamically generated Markov-parameters. Essentially generating a type of correlation matrix for the parameters that gets tuned within the beginning of the measuring period that is then able to generate a residual, detecting errors. This approach is explained more closely in the most recent publication, examining the unknown dynamic systems of a roomba platoon. \cite{khalil_transmissibility-based_2022, khalil_transmissibility-based_2022-1}
 
-3. for all
-
-analogy to covariance matrix
-
-SVD.
-
-\subsubsection{What is PCA (Concluding remarks. Lessons learned)}
-
-\subsection{ PTF}
-
-\subsubsection{control systems approach}
-
-what are state values?
-
-
-Following the recipe for a modeled aircraft based on sensor data we try to simulate the parameters x and u of the aircraft with the sensor data y. Khaled shows that this approach works for linking omega_x omega_y, delta_delta(drift angle) with omega_z. and Transmissibility function  $\mathcal{T}$
+\paragraph{Functionality}
 
 
 The examined approaches include:
-\begin{enumerate}
-    \item Transmissibility functions $\mathcal{T}$ that model the system output without having to take the unknown
-    system input into consideration
-    \item Bond Graphs to model a physical rigid aircraft system
-    \item Physical relations
-    \item redundancies between sensors
-\end{enumerate}
 
-model based fault detection(isermann)
--parameter estimation (process modeling with linear or nonlinear functions, unknown process parameters are modeled by residual minimization)
--parity equations ()
--state estimation (kalman), state/output observers (for known process parameters, )
--principle component analysis
+Transmissibility functions $\mathcal{T}$ that model the system output without having to take the unknown system input into consideration.
 
-\subsection{STFT}
-stft.
++TODO?: include more detailed examples
 
-Test noise analysis over short time window of 256 samples.
+\paragraph{Utilization}
+Since this is a relatively new development, no broad implementations exist. It is to note however, that this method takes inspiration from structural health monitoring by transforming the structural health monitoring algorithms that work in the frequency domain into the time domain.
 
-Define here
+\paragraph{Assessment}
 
+This approach seems especially suitable for real-time implementations and may also be used in postprocessing. It comes however with the penalty of not being usable straight out of the box since no python implementations exist so far. For future work, this may be implemented to evaluate its capability against other algorithms. It also remains to be seen how well this algorithm performs on large datasets and how much preprocessing effort needs to be undertaken.
 
-Also, next to the simple and known models to display an error is the Luenberger Beobachter.
-enter placeholder for image: Measurement equals signal + error
-and image: luenberger beobachter. Kalman Implementierung (Lie13)
-Parameter Correlation Studies (Li15)
+\subsubsection{Parity Equations}
 
-\subsection{API}
+Parity Equations work by modelling the physical state of a system in normal working conditions. They are based on knwon physical relationships between sensor measurements and generate a residual. This residual is then continuously checked during operations and once it reaches or exceeds a previously defined threshold it notifies the system's operator. \cite{isermann_fault-diagnosis_2011}
 
-\subsection{GNSS}
+\paragraph{Functionality}
 
-The aircraft altitude generally is defined as the displacement of the aircraft from Mean Sea Level (MSL).
-On a geodetic scale, the earth can be described as an ellipsoid due to its rotation. However, varying density levels of the earth's crust cause the elevation and sea level to deviate from the ellipsoid shape. This results in a lopsided model that is modeled in the WGS84 (ref and image here) system. This is also the altitude that the gps measures. And will be the reference altitude for the following calculations.
+The Parity workflow separates into the two steps of calculating the physical state and generating a residual and then interpreting the residual.
 
-The main existing altitudes are the:
-\begin{enumerate}
-    \item Geodetic Altitude (GNSS)
-    \item Barometric Altitude (used in conjunction with reference pressure)
-    \item Inertial Altitude
-    \item Radar Altitude (can be used in conjunction with a terrain model to derive geodetic altitude)
-\end{enumerate}
-Possible errors for each are:
-geodetic: inconvenient satellite placements, deflection of signals in the atmosphere and signal problems
-Barometric Altitude: Possible errors due to drift and meteorological atmospherical pressure shifts, Reference Altitude.
+\paragraph{Utilization}
 
-Going into WGS84 and the GNSS Altitude however exceeds the scope of this work. In the following, the satellite altitude above Mean Sea Level (MSL) is considered as the reference altitude.
+Parity Equations are employed in systems in which the physical correlations are well-known. They allow fusion of various parameters into system state variables to then generate residuals for single parameters to determine the parameter errors.
+
+\paragraph{Assessment}
+Since the relations of the aircraft systems and behavior have historically been subject of extensive research the Parity equations lend themselves to be considered within this context. Extensive tuning is however integral part of Parity Equations since physical correlations as well as residual thresholds need to be tuned to avoid amassing false positives.
+
+\subsubsection{Grey Box models}
+
+Another method for system modelling lies in grey box models. The "grey" attribute arises from the property that these systems have baseline constraints that may be set and some degrees of freedom such as tuning parameters. These tuning parameters are then tuned against a set of previously defined training cases to satisfy the constraints. This represents an approach that works with limited system knowledge and implementations such as the PTF work to this model.
+
+%\paragraph{Functionality}
+
+%\paragraph{Utilization}
+
+%\subsubsection{Assessment}
+%Far more
+
+%model based fault detection(isermann)
+%-parameter estimation (process modeling with linear or nonlinear functions, unknown process parameters are modeled by residual minimization)
+%-parity equations ()
+%-state estimation (kalman), state/output observers (for known process parameters, )
 
 
-Fault detection algorithms within GNSS are described as Receiver Autonomous Integrity Monitoring (RAIM) are tried and tested within GNSS implementations since high accuracy positioning is valuable for various applications, reaching precisions of up to a few centimeters. Explaining the full function of position calculation exceeds this works' scope. To summarize however, GNSS inputs form an overdefined system of equations which needs to be compensated within some algorithm to form one position based on multiple inputs.
+%\paragraph{RAIMS}
+%Examination of Receiver autonomous integrity monitoring (RAIM) from GNSS applications.
+%basic principle 1 in 1 out basic
+%2 in 1 out mean solution. Detect discrepancies 1. simple solution: take average 2. detect discrepancies but still take average
+%3+ in 1 out. 1. take average 2. detect value with strong variations and isolate (it is assumed that only 1 sensor is faulty)
+%2.1 predict value and deny value if it is larger than 3 times standard deviation (Wen07, 239).
+%implementation details. see [Bro92]
 
 
-ica18 annex10
-ABAS, RAIM, AAIM
+%TODO: shorten the baro section to just contain the relevant transfer function
 
-\paragraph{RAIMS}
-Examination of Receiver autonomous integrity monitoring (RAIM) from GNSS applications.
+\subsubsection{FMEA Evaluation}
 
+An algorithm for evaluating data quality in level 3 must now be found based on these state of the art approaches.
 
-basic principle
-1 in 1 out
-basic
+Possible issues arise while comparing reliability. Especially in aerospace with multiple independent axes a false correlation may be detected due to circumstances. E.g. for a flight performing multiple consecutive landings it is possible for the Distance Measuring Equipment (DME) measuring distance to the airport to correlate with altitude and speed since all decrease and increase simultaneously. Simultaneously, employing no/low knowledge models enables rapid results eliminating the need for any degree of system knowledge.
 
 
-2 in 1 out
-mean solution. Detect discrepancies
-1. simple solution: take average
-2. detect discrepancies but still take average
+\begin{table}[]
+    \begin{tabular}{@{}lllll@{}}
+        \toprule
+        Noise algorithm:      & PCA & PTF & Grey Box Models & Parity Equations \\ \midrule
+        Implementation Effort & 3   & 4   & 3               & 1                \\
+        System Knowledge      & 0   & 2   & 2               & 4                \\
+        Reliability           & 2   & 3   & 2               & 4                \\ \bottomrule
+    \end{tabular}
+    \caption{Comparing FMEA solutions by their respective usability}
+    \label{tab:lvl3_fmea_comparison}
+\end{table}
 
-3+ in 1 out.
-1. take average
-2. detect value with strong variations and isolate (it is assumed that only 1 sensor is faulty)
-2.1 predict value and deny value if it is larger than 3 times standard deviation (Wen07, 239).
-
-implementation details. see [Bro92]
-
-
-
-
-\subsection{The barometric altitude based on the International Standard Atmosphere (ISA) \cite{iso_standard_1975}}
-
-The international standard atmosphere is the conventional method of measuring an aircrafts altitude based on air pressure. The method can be understood as a function of pressure and reference pressure (differing based on weather) that returns an altitude. In the following this equation based on fundamental scientific correlations will be derived.
-
-In the beginning, a finitesimally small element of the atmosphere is considered that is in equilibrium. It has pressure acting upon it from all its sides. The pressures acting upon all its sides generate a force that cancels out within the horizontal directions. It is notable however that the pressure on the top marginally differs from the pressure on the bottom. This arises from the elements desire to remain in stationary as it is attracted by gravity. Were the pressure difference on top and bottom equal, the element would begin moving towards the origin of the gravity vector.
-
-Since we are interested in the difference in pressure we formulate the force equilibrium for direction h in equation \ref{eq:baro_equilibrium}.
+In table \ref{tab:lvl3_fmea_comparison} the introduced FMEA-schemas are evaluated on their viability to use within this work. While PTF as well as other Grey-Box models exist, they need considerable effort within their primary implementation and then their respective training. Since the research and development of a novel, optimal FMEA is also not focal point of this work since it is rather more important to generate a holistic heuristic, solving first and foremost the basic problems associated with basic errors. Hence, Parity equations are chosen to be developed further within this work. Generating a dynamic model of the aircraft physical correlations that allows itself to be expanded for future use.
 
 
-\begin{figure}[h]
+\begin{figure}
     \centering
-    \includegraphics[width=.4\textwidth]{baro_dgl.drawio}
-    \caption{Forces around a finitesimally small element}
-    \label{fig:baro_FE}
+    \includegraphics[width=1\textwidth]{FMEA_methods}
+    \caption{An overview over various kinds of FMEA \cite{zhang_bibliographical_2008}}
+    \label{fig:FMEA-methods}
 \end{figure}
 
+It also needs to be taken into account that this summary of FMEA methods barely scratches the surface. Far more FMEA variations exist as shown in figure \ref{fig:FMEA-methods}. It remains to be seen now, how well this work's architecture for integrating these FMEA may hold up in regard of testing these methods in future work.
 
-Please note that the original gravity term of course is $\rho \cdot dV \cdot g$ but we can transform it to $\rho \cdot dA \cdot dh \cdot g$ using the correlation $dV = dA * dh$ with $dA$ being the area of the elements top and bottom side.
+\subsubsection{Barometric Altitude}
 
-From equation \ref{eq:baro_equilibrium}
-\begin{equation}
-    \sum{F_h} = 0 = p(h) \cdot dA - ( p(h) + dp )\cdot dA -  \rho \cdot g \cdot  dh \cdot dA
-    \label{eq:baro_equilibrium}
-\end{equation}
+For the Parity model, the barometric altitude is introduced to compare experimental pressure sensors with the aircrafts barometric altitude.
 
-follows \ref{eq:baro_equilibrium_simple}.
-
-\begin{equation}
-    dp=-\rho \cdot g\cdot dh
-    \label{eq:baro_equilibrium_simple}
-\end{equation}
-
-$\rho$ can be taken out of eq. \ref{eq:baro_equilibrium_simple} using the perfect gas formula $p=\rho R T$ and equation \ref{eq:baro_equilibrium_perfect} emerges.
-
-\begin{equation}
-    \frac{dp}{p} = \frac{-g}{R \cdot T} \cdot dh
-    \label{eq:baro_equilibrium_perfect}
-\end{equation}
-
-
-At this point we need to introduce the Temperature model of the ISA. It assumes linear temperature gradients for each layer of the atmosphere, meaning that each atmospheric layer can be modeled using a single coefficient that models the gradient. In the following, this gradient will be used as $a=dT/dh$. This allows modeling the temperature for each atmospheric layer with equation \ref{eq:isa_temperature}.
-
-\begin{equation}
-    T(h)= a  \cdot h + T_0
-    \label{eq:isa_temperature}
-\end{equation}
+The International Standard Atmosphere (ISA) is the conventional method of measuring an aircrafts altitude based on air pressure. \cite{iso_standard_1975} The method can be understood as a function of pressure and reference pressure (differing based on weather) outputting an altitude. The assumptions for each layer of the atmosphere are shown in table \ref{tab:isa_temp}.
 
 \begin{table}[h]
     \centering
@@ -626,58 +560,11 @@ At this point we need to introduce the Temperature model of the ISA. It assumes 
         Mesosphere   & 51-71             & 270.65            & -2.8                  \\
         Mesosphere   & 71-80             & 214.65            & -2                    \\ \bottomrule
     \end{tabular}
-    \caption{International Standard Atmosphere cite ISO75. Atmospheric Layers model the average physical correlations and do not represent real atmospheric values which vary greatly based on latitude and local factors.}
+    \caption{International Standard Atmosphere \cite{iso_standard_1975}}
     \label{tab:isa_temp}
 \end{table}
 
-
-Using the different coefficients from table \ref{tab:isa_temp} we now can model the Temperature based on a standard temperature of 15° Celsius or 288.15Kelvin at Mean Sea Level (MSL), meaning that $h=0$. The temperature gradients drastically simplify real circumstances but work as an empirical estimate that is good enough to guarantee a common understanding of barometric altitudes. This is especially important for aeronautic applications since altitudes for directing flights are generally given in barometric altitudes.
-
-Now, substituting the ISA-equation \ref{eq:isa_temperature} into \ref{eq:baro_equilibrium_perfect} delivers \ref{eq:baro_pde_full}.
-
-\begin{equation}
-    \frac{dp}{p}=\frac{-g}{R*(a*h+T_0)}*dh
-    \label{eq:baro_pde_full}
-\end{equation}
-
-To get this differential equation into a regular formula we need to integrate which resolves into equation \ref{eq:baro_integrated}.
-
-\begin{equation}
-    \ln(\frac{p}{p_0}) = - \frac{g}{a \cdot R} \cdot ln(\frac{a*h+T_0}{a*h_0+T_0})
-    \label{eq:baro_integrated}
-\end{equation}
-
-The borders chosen for integration are the lower border of the atmospheric layer referenced with the index 0 and the other layer being the running variable.
-
-Substitution for the single factors follow in equations\ref{eq:baro_substitutions}.
-
-\begin{equation}
-    \ln(a) = b * \ln(c)
-    \label{eq:baro_substitutions}
-\end{equation}
-\begin{conditions}
-    a & $p/p_0$                                                                                                                 \\
-    b & $\frac{-g}{a \cdot R} $                                                                                                 \\
-    c & $\frac{a \cdot +T_0}{a \cdot h_0+T_0} = 1+ \frac{a \cdot (h-h_0)}{a \cdot h_0+T_0} = 1+ \frac{a \cdot (h-h_0)}{T(h_0)}$
-\end{conditions}
-
-
-Subequation c is then simplified by pulling $T_0$ into the denominator and substituting the ISA-equation \ref{eq:isa_temperature}.
-
-After substituting, the term \ref{eq:baro_sub_first} emerges.
-\begin{equation}
-    \ln(a) = b * \ln(c) = \ln(c^b)
-    \label{eq:baro_sub_first}
-\end{equation}
-
-Brief transformation then resolves into \ref{eq:baro_sub_last}.
-\begin{equation}
-    \rightarrow a = c^b
-    \label{eq:baro_sub_last}
-\end{equation}
-
-
-Resubstituting then gives equation \ref{eq:baro_Tvar}, the barometric altitude equation.
+Based on these constants the general equation for pressure within an atmospheric layer with a nonzero temperature gradient is shown in equation \ref{eq:baro_Tvar}. \cite{iso_standard_1975}
 
 \begin{equation}
     \frac{p}{p_0}=\left(1+\frac{a \cdot\left(h-h_0\right)}{T\left(h_0\right)}\right)^{\frac{-g}{a \cdot R}}
@@ -690,8 +577,8 @@ Resubstituting then gives equation \ref{eq:baro_Tvar}, the barometric altitude e
     h      & current altitude   [m]                                              \\
     h_{0}  & reference altitude [m]                                           \\
     T(h_0) & temperature at reference altitude[K]                             \\
-    a      & ISA Temperature Coefficient depending on altitude $(-6.5e-3)[K/m]$ \\
-    g      & gravity constant $(9.80665) [m/s^2]$                               \\
+    a      & ISA Temperature Coefficient depending on altitude $(-6.5)[K/km]$ \\
+    g      & gravity constant $(9.80665) [m/s^2]$                             \\
     R      & Ideal Gas Constant  $(287.05287)[m^2/( K\cdot s^2)]$
 \end{conditions}
 
@@ -699,29 +586,16 @@ Transforming this formula for altitude resolves into equation \ref{eq:h_baro_Tva
 
 %\[1 + \frac{a}{T(h_0)}\cdot (h-h_0) = \left(\frac{p}{p_0}\right)^{\frac{1}{\frac{-g}{a \cdot R}}}\]
 \begin{equation}
-    \rightarrow h = \left(\frac{p}{p_0}^{\frac{-a*R}{g}}-1\right)\frac{T(h_0)}{a}+h_0
+    \rightarrow h = \left(\frac{p}{p_0}^{\frac{-a \cdot R}{g}}-1\right)\frac{T(h_0)}{a}+h_0
     \label{eq:h_baro_Tvar}
 \end{equation}
 
-\paragraph{Barometric equation for constant layer temperature}
+\paragraph{Constant layer temperature}
 
-This formula however is not valid for constant layer temperature and $a=0$. So the barometric equation \ref{eq:baro_pde_full} needs to adapted to $a=0$ \textbf{before} integration. From equation \ref{eq:baro_pde_full} henceforth follows equation \ref{eq:baro_Tconst_pde}.
-\begin{equation}
-    \frac{dp}{p} = \frac{-g}{RT_0} \cdot dh
-    \label{eq:baro_Tconst_pde}
-\end{equation}
-
-Integrating then yields \ref{eq:baro_Tconst_integrated}:
+Resolving for pressure into equation \ref{eq:baro_Tconst} follows into the barometric equation for a constant temperature coefficient.
 
 \begin{equation}
-    \ln\left(\frac{p}{p_0}\right) = \frac{-g}{RT_0} \cdot h
-    \label{eq:baro_Tconst_integrated}
-\end{equation}
-
-And resolving for pressure into equation \ref{eq:baro_Tconst} follows into the barometric equation for a constant temperature coefficient.
-
-\begin{equation}
-    \frac{p}{p_0}= exp\left(\frac{-g}{RT(h_0)}\cdot(h-h_o)\right)
+    \frac{p}{p_0}= \exp\left(\frac{-g}{R \cdot T(h_0)}\cdot(h-h_o)\right)
     \label{eq:baro_Tconst}
 \end{equation}
 
@@ -731,13 +605,13 @@ The following equation \ref{eq:h_baro_Tconst} then resolves for the altitude bas
 
 %$$ln(\frac{p}{p_0}) =\frac{-g}{RT(h_0)}\cdot(h-h_o) $$
 \begin{equation}
-    h = ln(\frac{p}{p_0})\cdot \frac{RT(h_0)}{-g}+h_0
+    h = ln(\frac{p}{p_0})\cdot \frac{R \cdot T(h_0)}{-g}+h_0
     \label{eq:h_baro_Tconst}
 \end{equation}
 
-\paragraph{Process to determine altitude}
+\paragraph{Logic Flow}
 
-The process to then actually calculate a barometric altitude is displayed in figure \ref{flow:ISA}. The input is p and $p_0$ with p being the measured pressure via the aircrafts static ports and $p_0$ being the reference pressure that is manually set by the pilot with the standard pressure being $p_{std} = 1013.25hPA$ which varies according to the weather.
+The process to then actually calculate a barometric altitude is displayed in figure \ref{flow:ISA}. The input is p and $p_0$ with p being the measured pressure via the aircrafts static ports and $p_0$ being the reference pressure that is manually set by the pilot with the standard pressure being $p_{std} = 1013.25$hPa which varies depending to the weather.
 
 
 \begin{figure}[h]
@@ -752,8 +626,8 @@ The process to then actually calculate a barometric altitude is displayed in fig
 % Nodes
         \node (start) [draw, terminal] {Start};
         \node (input) [draw, io, above of=start] {$p, p_{0}$};
-        \node (data) [draw, io, below of=start] {isa};
-        \node (getlayer) [draw, process, right of=start, align=center] {[1]\\ get layer from \\table \ref{tab:isa_temp}};
+        \node (data) [draw, io, below of=start] {ISA};
+        \node (getlayer) [draw, process, right of=start, align=center] {[1]\\get layer\\from table \ref{tab:isa_temp}};
         \node (decide) [draw, decision, right of=getlayer, align=center] {[2] is a=0};
         \node (a) [draw, process, below right of=decide, align=center] {[3.2]   $a=0$\\Get p with eq. \ref{eq:h_baro_Tconst}};
         \node (notA) [draw, process, above right of=decide, align=center] {[3.1]  $a \neq 0$\\Get p with eq. \ref{eq:h_baro_Tvar}};
@@ -778,62 +652,99 @@ The process to then actually calculate a barometric altitude is displayed in fig
 
 
 
-The current atmospheric layer gets found by matching the MSL-pressure ratio  $\frac{p}{p_0}$ to precalculated boundary values of layers based on table \ref{tab:isa_temp}.
-After determining the layer and the value for temperature coefficient $a$, the altitude can quickly be determined by inserting layer properties as well as the pressure ratio into their according altitude equation (step 3.1 and 3.2 in flowchart \ref{flow:ISA}). In the final step 4 the altitude is returned.
+In step 1 the current atmospheric layer gets found by matching the MSL-pressure ratio  $\frac{p}{p_0}$ to precalculated boundary values of layers based on table \ref{tab:isa_temp}. After determining the layer and the value for temperature coefficient $a$, the altitude can quickly be determined by inserting layer properties as well as the pressure ratio into their respective altitude equation (step 3.1 and 3.2 in flowchart \ref{flow:ISA}). In the final step 4 the altitude is returned.
 
-Notes: The ISA Norm defines barometric equations for both geometric as well as geopotential conditions. Both start at MSL but geopotential altitude assumes equal acceleration $g$ for every altitude. Since its value as an industry-standard, the gepotential altitude is considered in this work. For completeness the correlation between geopotential and geometric altitude is given in equation \ref{eq:geopotential_alt}. This formula is based on a derivation of gravity potentials and a full derivation can be found in \textcite{iso_standard_1975}.
+\paragraph{GNSS}
+In addition to the barometric altitude, the Global Navigation Satellite System (GNSS) is also measured within the ISTAR.
+
+For reference, the aircraft altitude generally is defined as the displacement of the aircraft from Mean Sea Level (MSL). It is important to note that the earth can generally be described as an ellipsoid due to its rotational shape in a geodetic context resulting in a very close approximation of the earth's shape. However, varying density levels of the earth's crust cause the elevation and sea level to deviate from the ellipsoid shape. This results in a lopsided model that is modeled in the WGS84 (\cite{schwarz_wgs_1998}) system. This is also the altitude that the gps measures. And will be the reference altitude for the following calculations.
+
+The main existing altitudes are the:
+\begin{enumerate}
+    \item Geodetic Altitude (GNSS)
+    \item Barometric Altitude (used in conjunction with reference pressure)
+    \item Inertial Altitude
+    \item Radar Altitude (can be used in conjunction with a terrain model to derive geodetic altitude)
+\end{enumerate}
 
 
-\begin{equation}
-    h_{geometric} = \frac{r_{earth} \cdot h_{geopotential}}{r_{earth} - h_{geopotential}}
-    \label{eq:geopotential_alt}
-\end{equation}
+Possible errors for each are: geodetic: inconvenient satellite placements, deflection of signals in the atmosphere and signal problems
+
+
+Barometric Altitude: Possible errors due to drift and meteorological atmospherical pressure shifts, Reference Altitude.
+
+Going into WGS84 and the GNSS Altitude however exceeds the scope of this work. In the following, the satellite altitude above Mean Sea Level (MSL) is considered as the reference altitude.
+
+
+Fault detection algorithms within GNSS are described as Receiver Autonomous Integrity Monitoring (RAIM) are tried and tested within GNSS implementations since high accuracy positioning is valuable for various applications, reaching precisions of up to a few centimeters. Explaining the full function of position calculation exceeds this works' scope. To summarize however, GNSS inputs form an overdefined system of equations which needs to be compensated within some algorithm to form one position based on multiple inputs.
+
+
+%ica18 annex10 ABAS, RAIM, AAIM
+\newpage
+
+\subsubsection{Summary}
+%summarize
+The fundamentals of potential algorithms to quantify system qualities have been presented in the past section. the Statistical fundamentals have been briefly outlined followed by FMEA implementations from statistics in the shape of Principal Component Analysis (PCA) ranging to implementations from control theory. Advanced models such as machine learning models have not been presented but are generally similar to PCA since they also work without system knowledge and also extract features similar to Principal Components.
+
+%When talking about Sensor Health Monitoring (SHM) generally one requirement is made which is to detect failures and suspicious behaviours within a system. The failures then need to be quantified to allow writing algorithms to detect them. If one had a sensor value that differed strongly from its expected values a decision needed to be made how much the sensor value differed from the expected value and where the system would receive the information from. This and further considerations are examined in the following chapter to generate a broad overview over the topic of Sensor Health Monitoring and Fault Detection.
+
+
+%%%scope of this work
+The research within the general quality control field is generally very optimized with most of its research on analytical and traditional methods having been developed and implemented in the late 20th century \cite{isermann_fault-diagnosis_2011}. The new arising challenge faced within this work lies primarily in integrating these existing algorithms to allow evaluation of them. In the future such toolboxing approaches may allow quick and easy comparison of new experimental approaches by e.g. running new experimental ML-routines in such a toolbox to then validate them against existing tried and tested FMEA approaches within frameworks such as the ones developed within this work.
+
+In addition to detecting faults it is also necessary for a SHM to display faults to the systems operator. This may happen in the shape of a display interface or a dashboard that generates fault and reliability ratings. Condensing information for operators is also a necessary part of SHM since suspicious occurences may be frequent and raw information about events is less helpful than already preprocessed data. This is what is now presented in the upcoming sections, first dealing with the structure in which the metadata will be handled and discussing the origin and destination of data in the SHM context.
+
+%Within this chapter various algorithms and methods that may be used to detect faults are presented first and then followed by considerations in the direction of metadata. Standards for metadata as well as new propositions are examined and the skystash architecture which is used for data hosting as well as analytic tasks is presented.
 \newpage
 
 
+\section{SHM Metadata Structures}
 
-\section{Structuring large datasets}
+Data handling as well as structuring the data is essential for fulfilling FAIR criteria in terms of the accessibility and reusability. Thus necessitating a standardized data and metadata format. In the following, the FAIR standard and the motivation of data handling is presented and then its application in form of data format as well as the metadata format are introduced.
 
-\subsection{Data Format, FAIR}
+\subsection{FAIR}
+
+Standardized data handling and following of conventions in regard of data structures always directly clashes with the desire to optimize data structures, making them more efficient, dynamic as well as developing them further. Were data structures once used as purely SQL (tabular format) this has now expanded into a wide array of data structures that are tightly knit into the needs and requirements of their application. Starting from tree structures, going into graph-theory and furthering into unstructured paradigms, these approaches represent the tradeoff between standardization and accurate data representation. The following paragraph discusses the use of FAIR principles to satisfy the standardization aspect while also allowing flexibility within the system to represent the underlying physical systems.
+
+\subsubsection{FAIR principles}
 
 Originating from a dutch alliance of biotechnology institutes in 2015, the FAIR Guiding principles emerged in 2016 as a general best practice guide for research data, referencing best practices
 
-FAIR principles have been published in 2016 by the source here. They set the foundation for a standardized and open data culture. Within these principles values like open access for data, findable and well tagged datasets, interoperable data by using standardized formats and or semantics (define semantics as well) which guarantee a reusability of data to generate a sustainable process for data usage. Effectively meaning that similar experiments do not have to be performed multiple times when well tagged and formatted data is freely available.
+FAIR principles have been published in 2016 by \textcite{wilkinson_fair_2016}. They set the foundation for a standardized and open data culture. Within these principles lie values like open access for data, findable and well tagged datasets, interoperable data by using standardized formats and semantics which guarantee a reusability of data to generate a sustainable process for data usage. Effectively meaning that similar experiments do not have to be performed multiple times when well tagged and formatted data is freely available.
 
-
-json file format (FAIR-principles, INST-DLR, SOIL)
-
-Explain which means are taken to guarantee an architecture throughout the work that ensures an implementation of the FAIR principles and the V-model.
-Architecture of the JSON-Tree structure and which data is inserted where.
-
-
--modern data management principles (storage not as important as readability)
-
-Comparison with existing data structures. Implementation into existing architecture
-
---> Chosen Data Model, Semantics
-
-
-
-\subsection{SOIL}
-
-\subsection{Skystash}
-\label{chap:skystash}
-
-Flight test data needs to be perceived within the context of its circumstances to extract all its information.
-
-dlrk paper hier zitieren.
-
-this work(flight data, sensor positions, isa table)
+The full FAIR principles are shown in figure \ref{fig:FAIR}.\cite{wilkinson_fair_2016}
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\textwidth]{03_figures/DIGECAT}
-    \caption{Generation of flight test data \cite{arts_digital_nodate} }
-    \label{fig:digecat_data_sources}
+    \includegraphics[width=\textwidth]{FAIR}
+    \caption{The FAIR principles \cite{wilkinson_fair_2016}}
+    \label{fig:FAIR}
 \end{figure}
-!!!!!!!!do a part page design here.
 
+
+FAIR essentially acknowledges that data analytics have come so far that the data analysis has become very effortless. So effortless however, that a major part of data science consists of formatting and acquiring data. To circumvent this issue in the future and also learn from past data it is then vital to guarantee FAIR principles. This allows to leverage current technology to automate analysis and enable detection of previously undetected correlations within datasets.
+
+
+\subsubsection{SI-Units}
+Units, especially within aerospace contexts, are far from standardized. Most scientific users prefer SI-units. However, the convention for Pilots and Flight Test Engineers remains imperial within units such as feet, Nautical Miles, knots and so on. Naturally SI-units are chosen for calculations since calculations are more efficient as well as less prone to errors in SI-systems. Within this work, base SI-units will be used (e.g. m, s, N, kg, Pa).
+
+\subsection{Methods}
+
+Within this work it is then necessary to use standardized fair frameworks for data and metadata exchange. Since the skystash, a FAIR research data platform is already in development and in prototypical use within the DLR, the developed algorithm will be tested by working in conjunction with the skystash. To exchange data, the SOIL (SensOr Interfacing Language) framework will be examined for defining metadata of the aircraft and the FMEA logic itself.
+
+\subsubsection{Skystash}
+\label{chap:skystash}
+The skystash is a platform to distribute, analyze and visualize large flight data sets. It is currently in development within the DLR's digital twin project and aims to be a service platform for uploading and sharing the DLR's flight test data. Various requirements are posed from different stakeholders. And large data sets necessitate a platform that can handle these file sizes.
+
+%Such as sampling rate. Flight guidance projects may be content with sampling rates as low as 1 Hz. Other stakeholders such as aeroelastic experts may require sampling rates as high as possible and may reach up to 2000Hz within the ISTAR. For this purpose a dynamic data export is sensible in which users can directly choose sampling rates as well as single parameters from a flight contrary to downloading and working with a whole flight data set averaging up to 2GB of data.
+
+%\section{downloadfunctionalities}
+%file sizes too large --> Reduction for on demand parameters and resampling utility Handling of large data sets
+
+
+What are skystash goals to implement, how does it generally work?
+◊ Mongodb datastructure. Fixed structure of Project/Collection/Series for all flights. Enrichment with json-metadata as well as binary objects is possible. MongoDB is accessible via api and web client to mitigate user errors within the database. Data series are saved as numpy errors.
+◊ Nginx controls web traffic and accepts input via python API and the website and redirects it to ceycloak for authentification, angular frontend for displaying, and stashclient for accessing the database for performing data mutation or search operations using ist powerful search query.
 
 \begin{figure}[h]
     \centering
@@ -842,32 +753,57 @@ this work(flight data, sensor positions, isa table)
     \label{fig:stash_architecture}
 \end{figure}
 
-the skystash is a platform to distribute, analyze and visualize large flight data sets. It is currently in development within the DLR's digital twin project and aims to be a service platform for uploading and sharing the DLR's flight test data. Various requirements are posed from different stakeholders such as the topic of sampling rate. Flight guidance projects may be content with sampling rates as low as 1 Hz. Other stakeholders such as aeroelastic experts may require sampling rates as high as possible and may reach up to 2000Hz within the ISTAR. For this purpose a dynamic data export is sensible in which users can directly choose sampling rates as well as single parameters from a flight contrary to downloading and working with a whole flight data set averaging up to 2GB of data.
+Flight test data needs to be perceived within the context of its circumstances to extract all its information. Hence the need for a digital twin. Within this context all necessary data shall be compounded to set a central starting point for data exploration and analysis. The DigECAT project attempts to solve this issue by providing the skystash platform. Figure \ref{fig:digecat_data_sources} shows all data sources that will be gathered. For this works context this means that necessary aircraft configuration data such as location of sensors is available (metadata) next to the actual generated data from the aircraft systems (data). This for the first time allows contextualizing flight data in one place. When previously various metadata and configuration info had to be manually collected, this whole process aims to minimize manual steps within the whole process.
+
+\cite{arts_digital_nodate}
+
 
 This work builds upon the python api and tries to implement and test an algorithm that checks the data for the istar aircraft
+\cite{meyer_development_2020}
 
 
-%\section{downloadfunctionalities}
-file sizes too large --> Reduction for on demand parameters and resampling utility
-Handling of large data sets
+\begin{wrapfigure}{O}{0.5\textwidth}
+    \begin{center}
+    \includegraphics[width=0.48\textwidth]{03_figures/DIGECAT}
+      \end{center}
+    \caption{Generation of flight test data \cite{arts_digital_nodate} }
+    \label{fig:digecat_data_sources}
 
-\subsection{optimal data structure}
-data
-metadata
-needs to be efficient
+\end{wrapfigure}
 
-\subsection{A word towards unit management}
+\subsubsection{Metadata exchange format}
 
-Units, especially within aerospace contexts, are far from standardized. Most scientific users prefer SI-units. However, the convention for Pilots and Flight Test Engineers remains imperial within units such as feet, Nautical Miles, knots and so on. Table \ref{tab:unit_conversions} gives an overview over the conversions that are used within this work. Naturally SI-units are chosen for calculations since calculations are more efficient as well as less prone to errors in SI-systems.
+Aiming for a standardized machine-readable data format the SensOr Interfacing Language (SOIL) is examined. The aircraft data as shown in figure \ref{fig:digecat_data_sources} is varied in format and shape. For this work however we need a data format that is able to handle and represent the intricate details of the aircraft precisely. For the various sources, a metadata enrichment step might be practicable. Effectively, this would act as a metadata importer that fuses metadata and also translates it into SOIL.
 
-\begin{table}
-    placeholder
-    \label{tab:unit_conversions}
-\end{table}
+%□ DAQ-config □ Aircraft config and parameter info □ Metadata enrichment --> SOIL
 
 
 
 
-\section{conclusion theory and basics}
+\subsubsection{Use of FAIR in the implementation}
+To now fulfill FAIR principles, we examine the interfaces in the architecture.
+The generated flight test data is available and metadata is already in a JSON-file format. To further specify and standardize metadata we can translate metadata into SOIL to further Interoperability. This enriched metadata then can be fed into the FMEA step. Exiting the FMEA-step, the Analysis results can also be defined within a SOIL/JSON format and then get opened by other applications to access data quality results and perform further analysis steps, increasing Reusability.
 
-BAsed upon these fundamentals, the effort is undertaken to implement the Sensor Health  Monitoring
+%Explain which means are taken to guarantee an architecture throughout the work that ensures an implementation of the FAIR principles and the V-model. Architecture of the JSON-Tree structure and which data is inserted where.
+
+By implementing standardized JSON-data structures for the metadata including dataset and report, interoperability as well as reusability are guaranteed. To increase Findability, the skystash architecture is used which generates a unique identifier for every dataset. \cite{meyer_development_2020}.
+By enriching metadata, findability as well as accessibility is guaranteed.
+And finally, converting to SI-units guarantees accessible, interoperable and reusable data.
+
+\newpage
+
+
+\section{SHM results config}
+
+Within the last step of the FMEA, the generated report results need to be analysed which in turn might necessitate change of the FMEA parameters. To facilitate the process and lower the barrier of entry, the possibility of an interactive report/dashboard is examined with the ultimate goal to output a report that is clear, concise and standardized.
+
+\subsection{Challenges}
+
+The requirements for such a report are firstly motivated by necessity. It is vital to show error detection, embed the report into the toolchain and find a format to communicate metadata as well as SHM findings. Such a report tool could then also be used in the development of new algorithms since it generates quick feedback and precise feedback, aiming to display various Indicators for data quality and FMEA quality.
+
+\section{Summary}
+
+
+%TODO: talking points:intro, definitions, algorithms, metadata, results
+
+

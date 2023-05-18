@@ -61,7 +61,8 @@
 \ProcessOptions\relax
 \LoadClass[twoside]{report}
 
-\RequirePackage[\longlang]{babel}
+\RequirePackage[greek,\longlang]{babel}
+
 
 %TODO pass options to class
 
@@ -99,6 +100,7 @@
 
 %% Package for creating listing with \enumerate
 \RequirePackage{enumerate}
+\RequirePackage{enumitem}
 
 %% Adjust line spacing
 \linespread{1.5}
@@ -190,6 +192,8 @@ citecolor=black
 
 %% Advanced table package for use-defined width definitions
 \RequirePackage{tabularx}
+\RequirePackage{wrapfig}
+
 
 %% Defines a \FloatBarrier command, beyond which floats may not pass; useful, for example, to ensure all floats for a section appear before the next \section command. 
 \RequirePackage[section]{placeins}
