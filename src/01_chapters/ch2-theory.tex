@@ -6,7 +6,7 @@
 
 Chapter \ref{chap:2} introduces the theoretic baselines for data acquisition, data metrics as well as standardized data formats in which to save metadata.
 
-\begin{figure}
+\begin{figure}[!h]
     \centering
     \includegraphics[width=\textwidth]{SHM_simplified}
     \caption{The data flow architecture proposed within this work. Starting with the configuration and dataset and finishing with a data quality report}
@@ -18,16 +18,12 @@ Topics to consider when starting the Sensor Health Monitoring process are mainly
 The second major part to consider is that of physical crossrelations and \" deep checks \" which are a experimental mode of checking for inconsistencies among the data. Major research and implementation work shall go into developing a dynamic model that is generated from the data and then checks back upon the data for possible discrepancies. This approach is chosen as it is estimated to be the most structured approach for a first prototype.
 
 
-
 To solve this problem the infrastructure and general flow shown in figure \ref{fig:SHM_simplified} is proposed.
-
 
 
 \section{Introduction}
 
 Motivating this chapter is the desire to understand the fundamental error mechanism. Definition for errors are adopted from \textcite{isermann_fault-diagnosis_2006} defined in table \ref{tab:system_props_isermann}, the de-facto standard of Fault Diagnosis descriptions within the automation domain. Within this source errors are described as the difference between measurement and actual value as seen in figure \ref{fig:basic_error}.
-
-\newpage
 
 \subsection{What are Errors?}
 
@@ -50,11 +46,12 @@ Sensor are used to measure reality. But how precise do they measure? No sensor i
 Filtering out sensor errors is the goal of this thesis. As described in figure \ref{fig:basic_error} the error can be imagined as a disturbance added upon the original sensor value. Which then results in a skewed sensor measurement.
 
 \begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.5\textwidth]{basic_error}
-	\caption{Sensor Signal}
-	\label{fig:basic_error}
+    \centering
+    \includegraphics[width=0.5\textwidth]{basic_error}
+    \caption{Sensor Signal}
+    \label{fig:basic_error}
 \end{figure}
+
 
 \begin{wrapfigure}[13]{o}{0.4\textwidth}
     \centering
@@ -62,11 +59,11 @@ Filtering out sensor errors is the goal of this thesis. As described in figure \
     \includegraphics[width=0.4\textwidth]{sensor_errors_systemic}
     \caption{Systemic Sensor Errors \cite{hartmann_navigation-sensordatenfusion_2022, din_din_1995}}
     \label{fig:sensor_errors_systemic}
-
 \end{wrapfigure}
+
 In Table \ref{tab:error_types} sensor errors are divided into 3 subcategories which are classified by their appearance representing their manageability. Deterministic Errors can be easily compensated since they are reproduceable. Stochastic Errors however are non-deterministic. Figure \ref{fig:sensor_errors_systemic} gives an overview over systemic errors which generally are compensated by using calibration mechanisms in practical applications. The sensors within this work are assumed to be calibrated so this property is solely mentioned for completeness. However, perhaps some new understandings may be gained after a full SHM routine has been implemented since accuracy of calibration specifications is only as accurate as previously specified by the operator.
 
-Errors that also occur continuosly are random errors that are however unpredictable in their behaviour. To compensate those errors, filtering can be applied e.g., High- or Lowpassfilters. The final error type is Sensor failure. This is characterised as a spontaneous event that coincides with the complete interruption of the sensor information stream.
+Errors that also occur continuously are random errors that are however unpredictable in their behaviour. To compensate those errors, filtering can be applied e.g., High- or Lowpassfilters. The final error type is Sensor failure. This is characterised as a spontaneous event that coincides with the complete interruption of the sensor information stream.
 
 
 Now the question poses if errors can be pinpointed to their origin from where such errors arise. Generally, single sensors carry inherent errors such as clogged static ports (spontaneous hysteresis) or sensor drift (spontaneous bias) but errors also occur within the complex aircraft system architecture itself. An exemplary process step is the Analog to Digital Conversion. Sensor outputs are primarily analog but are then digitized in order to get transported by the aircraft data bus. This process is accomplished using an Analog Digital Converter (ADC), effectively eliminating information from the system. The full process is shown in figure \ref{fig:signal_processing}.
@@ -104,8 +101,6 @@ Other stochastic error mechanism include but are not limited to sensor drift as 
 
 Foundation for this work lies within a common understanding of its results. Standardized qualifiers are found within control theory \cite{isermann_fault-diagnosis_2011} as well as GNSS applications \cite{teunissen_springer_2017}. Standardization is also found within the ISO-Database. However, when beginning to describe data quality within metadata, the issue of metadata quality itself also arises. In the following, a brief overview is given over descriptors and their qualities based on norms.
 
-\
-
 \paragraph{Semantics}
 Semantics is a broad term due to its common use. One definition that has found some acceptance is the definition by Metzlers Lexikon which relies on theories by Blackburn and Kutschera. \cite{shoemaker_spreading_1987,kutschera_sprachphilosophie_1975}
 
@@ -121,7 +116,6 @@ Semiotics (\textgreek{σημεῖον},semeion:sign) describes the theory of sig
 This gets developed further within ISO 8000-8: Data Quality \cite{iso_data-quality_information_2015}, concluding that syntactic qualities define the structure of the content language and semantic qualities define the structure of the content itself to allow verifying information. Whereas pragmatic qualities describe the use that can be extracted from the content itself hence allowing validation.
 
 Contextually, the metadata syntax of this work will be in a JSON-format. The used semantics will be standardized to use the SOIL (SensOr Interfacing Language) structure and pragmatics will be quantified by the validity of the actual metadata.
-
 Moving on from these fundamental concepts, the pragmatic data qualities will be defined in the following.
 
 \paragraph{Metadata descriptors}
@@ -410,16 +404,15 @@ PCs can be created in any direction. Where input is needed however is the number
 Eliminating a principal component becomes easy if parameters show a direct correlation such as in figure \ref{fig:pca_variance}. The gatherings of $t_2$ then mostly consist of noise and can be safely discarded.
 
 
-
-\begin{wrapfigure}{I}{0.5\textwidth}
+\paragraph{Utilization}
+\par
+\begin{wrapfigure}{o}{0.5\textwidth}
+    \vspace{-20pt}
     \centering
     \includegraphics[width=0.48\textwidth]{pca_FD}
-
-    \caption{Known process input U as well as Sensor Measurement Y get collected into X and fed into a PCA. N indexes timesteps.\cite[p.268]{isermann_fault-diagnosis_2006}}
+    \caption{Process input U and Sensor Measurement Y get transformed into state X and fed into a PCA. N indexes timesteps and $X^*$ is the predicted output.\cite[p.268]{isermann_fault-diagnosis_2006}}
     \label{fig:pca_FD}
 \end{wrapfigure}
-
-\paragraph{Utilization}
 
 This analysis method is especially helpful for datasets for which correlations are unknown such as biomedicine in which marker correlation needs to be identified. But even for aerospace contexts it may prove helpful for large quantities of data in which correlations are unknown e.g. for parameter identification as well as perhaps aeroelastic applications in which vast amounts of acceleration sensors and strain gauges are present.
 
@@ -724,7 +717,6 @@ The full FAIR principles are shown in figure \ref{fig:FAIR}.\cite{wilkinson_fair
 
 FAIR essentially acknowledges that data analytics have come so far that the data analysis has become very effortless. So effortless however, that a major part of data science consists of formatting and acquiring data. To circumvent this issue in the future and also learn from past data it is then vital to guarantee FAIR principles. This allows to leverage current technology to automate analysis and enable detection of previously undetected correlations within datasets.
 
-
 \subsubsection{SI-Units}
 Units, especially within aerospace contexts, are far from standardized. Most scientific users prefer SI-units. However, the convention for Pilots and Flight Test Engineers remains imperial within units such as feet, Nautical Miles, knots and so on. Naturally SI-units are chosen for calculations since calculations are more efficient as well as less prone to errors in SI-systems. Within this work, base SI-units will be used (e.g. m, s, N, kg, Pa).
 
@@ -742,9 +734,7 @@ The skystash is a platform to distribute, analyze and visualize large flight dat
 %file sizes too large --> Reduction for on demand parameters and resampling utility Handling of large data sets
 
 
-What are skystash goals to implement, how does it generally work?
-◊ Mongodb datastructure. Fixed structure of Project/Collection/Series for all flights. Enrichment with json-metadata as well as binary objects is possible. MongoDB is accessible via api and web client to mitigate user errors within the database. Data series are saved as numpy errors.
-◊ Nginx controls web traffic and accepts input via python API and the website and redirects it to ceycloak for authentification, angular frontend for displaying, and stashclient for accessing the database for performing data mutation or search operations using ist powerful search query.
+What are skystash goals to implement, how does it generally work? ◊ Mongodb datastructure. Fixed structure of Project/Collection/Series for all flights. Enrichment with json-metadata as well as binary objects is possible. MongoDB is accessible via api and web client to mitigate user errors within the database. Data series are saved as numpy errors. ◊ Nginx controls web traffic and accepts input via python API and the website and redirects it to ceycloak for authentification, angular frontend for displaying, and stashclient for accessing the database for performing data mutation or search operations using ist powerful search query.
 
 \begin{figure}[h]
     \centering
@@ -757,38 +747,31 @@ Flight test data needs to be perceived within the context of its circumstances t
 
 \cite{arts_digital_nodate}
 
-
+\begin{wrapfigure}{O}{0.5\textwidth}
+    \centering
+    \includegraphics[width=0.48\textwidth]{03_figures/DIGECAT}
+    \caption{Generation of flight test data \cite{arts_digital_nodate} }
+    \label{fig:digecat_data_sources}
+\end{wrapfigure}
 This work builds upon the python api and tries to implement and test an algorithm that checks the data for the istar aircraft
 \cite{meyer_development_2020}
 
 
-\begin{wrapfigure}{O}{0.5\textwidth}
-    \begin{center}
-    \includegraphics[width=0.48\textwidth]{03_figures/DIGECAT}
-      \end{center}
-    \caption{Generation of flight test data \cite{arts_digital_nodate} }
-    \label{fig:digecat_data_sources}
 
-\end{wrapfigure}
 
 \subsubsection{Metadata exchange format}
+\label{chap:2-metadata-format}
 
 Aiming for a standardized machine-readable data format the SensOr Interfacing Language (SOIL) is examined. The aircraft data as shown in figure \ref{fig:digecat_data_sources} is varied in format and shape. For this work however we need a data format that is able to handle and represent the intricate details of the aircraft precisely. For the various sources, a metadata enrichment step might be practicable. Effectively, this would act as a metadata importer that fuses metadata and also translates it into SOIL.
 
 %□ DAQ-config □ Aircraft config and parameter info □ Metadata enrichment --> SOIL
 
-
-
-
 \subsubsection{Use of FAIR in the implementation}
-To now fulfill FAIR principles, we examine the interfaces in the architecture.
-The generated flight test data is available and metadata is already in a JSON-file format. To further specify and standardize metadata we can translate metadata into SOIL to further Interoperability. This enriched metadata then can be fed into the FMEA step. Exiting the FMEA-step, the Analysis results can also be defined within a SOIL/JSON format and then get opened by other applications to access data quality results and perform further analysis steps, increasing Reusability.
+To now fulfill FAIR principles, we examine the interfaces in the architecture. The generated flight test data is available and metadata is already in a JSON-file format. To further specify and standardize metadata we can translate metadata into SOIL to further Interoperability. This enriched metadata then can be fed into the FMEA step. Exiting the FMEA-step, the Analysis results can also be defined within a SOIL/JSON format and then get opened by other applications to access data quality results and perform further analysis steps, increasing Reusability.
 
 %Explain which means are taken to guarantee an architecture throughout the work that ensures an implementation of the FAIR principles and the V-model. Architecture of the JSON-Tree structure and which data is inserted where.
 
-By implementing standardized JSON-data structures for the metadata including dataset and report, interoperability as well as reusability are guaranteed. To increase Findability, the skystash architecture is used which generates a unique identifier for every dataset. \cite{meyer_development_2020}.
-By enriching metadata, findability as well as accessibility is guaranteed.
-And finally, converting to SI-units guarantees accessible, interoperable and reusable data.
+By implementing standardized JSON-data structures for the metadata including dataset and report, interoperability as well as reusability are guaranteed. To increase Findability, the skystash architecture is used which generates a unique identifier for every dataset. \cite{meyer_development_2020}. By enriching metadata, findability as well as accessibility is guaranteed. And finally, converting to SI-units guarantees accessible, interoperable and reusable data.
 
 \newpage
 
@@ -800,6 +783,7 @@ Within the last step of the FMEA, the generated report results need to be analys
 \subsection{Challenges}
 
 The requirements for such a report are firstly motivated by necessity. It is vital to show error detection, embed the report into the toolchain and find a format to communicate metadata as well as SHM findings. Such a report tool could then also be used in the development of new algorithms since it generates quick feedback and precise feedback, aiming to display various Indicators for data quality and FMEA quality.
+
 
 \section{Summary}
 

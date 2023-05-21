@@ -18,46 +18,124 @@ The implementation can be detailed by figure \ref{fig:fti_microservices}. After 
 
 
 \section{Data Parsing}
-Since the SHM has to run on something, the original data is briefly mentioned for completeness.
+%Since the SHM has to run on something, the original data is briefly mentioned for completeness.
 
-\subsection{ Parsing of ISTAR Data}
+Since the data the SHM will work on orginates from the airplane and needs to uploaded without any modification to preserve originality this small section will deal with the handling of data from the aircraft until it reaches its destination in the skystash.
 
-Istar data is parsed for each flight for each sensor. Istar config data is present for each flight in the shape of an imcexp file.
+The Data is uploaded to the stash from the aircraft DAQ format. Its data is available in the proprietary  IMC .raw formats. These are then parsed into the stash by converting them into timeseries for each parameter. The data structure used in the skystash is represented in figure \ref{fig:skystash_folder_structure}. The folder structure's main path is the project folder which represents the project in which the flight was performed in and contains all the project's flights. Each flight then contains parameter measurements which represent the lowest level of objects in the architecture. All objects of project, flight or measurement type can also contain JSON-usertags as well as additional data in binary format such as pdf files.
 
-ISTAR data originates from the ISTAR's DAQ system in the shape of .raw files for each parameter and is parsed and uploaded to the stash. It is then accessible via the stash api and can also be inspected in the stash webview. After the Dataset generation step the metadata available is only the one from the ISTAR DAQ system.
-The data is present in the shape of Projects->Collections->Series
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\textwidth]{skystash_folder_structure}
+    \caption{skystash folder structure}
+    \label{fig:skystash_folder_structure}
+\end{figure}
 
-The metadata is currently only the one from the ISTAR DAQ system. Since this metadata is not explicitly useful in itself it will be enriched further within the Configuration step (See figure \ref{fig:fti_microservices}).
+
+\subsection{Parsing of ISTAR Data}
+%ISTAR data originates from the ISTAR's DAQ system in the shape of .raw files for each parameter and is parsed and uploaded to the stash. It is then accessible via the stash api and can also be inspected in the stash webview. After the Dataset generation step the metadata available is only the one from the ISTAR DAQ system.
+%The data is present in the shape of Projects->Collections->Series
+
+
+To provide a full overview of the entire pipeline this step is mentioned. Starting off, we are left with a directory full of .raw and .imcexp files after a flight. Both are proprietary IMC formats. However, we can distinguish between both insofar that .raw files contain timeseries in an encoded format. The imcexp files then contain the configuration settings for the specific flight/measurement.
+
+The entire directory then gets parsed by a python script. Segmenting the binary structure of the raw files and extracting the timeseries for each parameter.
+The DAQ and aircraft sensor config for each flight gets exported from the imcexp file and uploaded to the skystash without modification to preserve genuineness of the data as shown in figure \ref{fig:skystash_data_pipeline}. Any Metadata in shape of a JSON format is represented with a red dot and any binary formats such as pdf files or other custom data are represented with a blue dot.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{skystash_data_pipeline}
+    \caption{Pipeline of parsing and uploading the skystash data to the skystash without modification}
+    \label{fig:skystash_data_pipeline}
+\end{figure}
+
+Parameters are saved under the flight object. Config data is assigned to the user tags of each parameter. The data is then parsed for each flight and inherent sensor.
+
+The metadata is currently only the one from the ISTAR DAQ system. Since this metadata needs further information to make it understandable  it will be enriched further within the Configuration step (See figure \ref{fig:fti_microservices}).
 
 
 \section{Configuration-Metadata}
 
-get imcexp data
-enrich excel data
+The configuration from the previous step has now been uploaded to the skystash. It describes the actual flight-dependent DAQ configuration and changes for every flight. It is, however, not complete. Since the DAQ only saves data relevant to itself, other vital metadata for users as well as the SHM are not present. In this section a method is implemented to enrich the DAQ metadata by transforming it into a common metadata format as well as appending useful additional metadata to each sensor and the flight.
+
+
+Generally, metadata exists in two forms. the actual flight-dependent DAQ config and the permanently valid metadata config that principally does not change.
+The actual config is different for each flight since it represents changes made by Flight Test Engineers to fit the DAQ-configuration the specific flight experiment. The permanent config however represents all additional info that may be relevant to a varied pool of users.
+
+
+
+
+define temporary config (DAQ), permanent config (local).
+demands:
+-central metadata type to represent all data. eliminate multiple inputs of metadata.
+--> collect all metadata in a single file/object
+optimally in an already common format. (transition to SOIL)
+
+
+Q: Why?
+E:-Metadata is not complete yet. -does only contain info from DAQ which represents only the info the DAQ needs. What about all the other information that is not in the DAQ?
+-This step details the considerations and implementations taken to be able to generate a useful metadata model that applies necessary information to the dataset within the skystash.
+-especially useful since locally defined metadata is not up-to-date and DAQ metada is not complete. Necessary to additionally add data relevant to the checks for each parameter.
+C: Metadata from DAQ represents limited view
+
+As previously discussed in chapter \ref{chap:2-metadata-format}, a common format for exchanging metadata is needed. Within the following the implementation details as well as the used methods are described.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.7\textwidth]{skystash_metadata_pipeline}
+    \caption{Metadata Pipeline}
+    \label{fig:skystash_metadata_pipeline}
+\end{figure}
+
+The metadata enrichment process is described in Figure \ref{fig:skystash_metadata_pipeline} starting with
+data and metadata that is available in the skystash and unmodified. This unmodified data then gets enriched with metadata that is available locally and helping to contextualize the metadata from the skystash by merging it with local metadata and parsing it into a SOIL-format.
+In this step other SHM attributes get assigned such as checking limits for level 2 and variable tags for level 3 defining the meaning of a parameter.
+Since the metadata uploaded to the stash in itself is not very expressive and cryptic it needs to be refined further into a usable, concise format.
+
+
+
+
+
+%generate merged view for metadata.--what did i mean by that?
+
+
+What attributes?
 -aircraft data
 -shm data
 -limits
 -type
 -tags
 -reference COS
-get excel data
+-get excel data
+-get parameter metadata
+-get flight metadata
 
-
-generate merged view for metadata.
-
-
-The metadata uploaded to the stash in itself is not very expressive and needs to be refined further into a usable, concise format. This step details the considerations and implementations taken to be able to generate a useful metadata model that applies necessary information to the dataset within the skystash.
-
-\subsection{ Basics: Metadata Collection, formatting into SOIL}
-The configuration of the ISTAR is of great importance for the data processing. Also of great importance is the knowledge database which is currently in the shape of an excel document.
-Attributes that are generally transmitted within the DAQ configuration are sampling rates, data origins and other miscellaneous information related to the system. Not contained are information about general sensor description, position of sensors, overall setup of the aircraft sensor architecture and check limits for data values.
-
-\subsection{Parsing and assignment of ISTAR data config}
--Additional Metadata
+Additional Metadata:
 -physical limits
 -amplitude limits
 -tag (physical entity)
 -reference ()
+
+
+Q:how does metadata get collected?
+The configuration of the ISTAR is of great importance for the data processing. Also of great importance is the knowledge database which is currently in the shape of an excel document.
+Attributes that are generally transmitted within the DAQ configuration are sampling rates, data origins and other miscellaneous information related to the system. Not contained are information about general sensor description, position of sensors, overall setup of the aircraft sensor architecture and check limits for data values. To preserve the original DAQ infos as closely as possible a merging as portrayed in figure \ref{fig:skystash_metadata_merging} is proposed. This way, original DAQ info that is frequently changing such as the frequency gets preserved while still allowing additional data by the permanent local config to be used
+
+\begin{figure}
+    \centering
+    \includegraphics{skystash_metadata_merging}
+    \caption{Priority Merging of Skystash data. Using the actual-DAQ configuration to overwrite other metadata.}
+    \label{fig:skystash_metadata_merging}
+\end{figure}
+
+
+
+
+
+we take the DAQ-config and merge it with the excel/other data into a JSON-format
+
+Q: what has been reached in this step?
+E: -the incomplete metadata from the DAQ has been enriched with the locally available metadata such as additional knowledge about the aircraft, the sensors itself and its context. Also, necessary data for the SHM step has been added such as limits for checks as well as tagging parameters for physical correlation checks.
 
 
 \section{Data Processing}
@@ -295,7 +373,7 @@ It shows that while conservatively chosen ranges do not indicate many occurences
 The validation loop is driven by previously known error types (See OneNote Sensor Errors)
 
 
-\section{Conclusion}
+\section{Summary}
 
 This parameter showed the methods used and the considerations made for the implementation of this SHM. Various methods and approaches were implemented to check for sensor faults. Next to the straight implementation, focus was put into developing solid interfaces to ease further implementation of future methods of fault detection. This applies for Levels 1, 2 as well as 3 which in this work was only minimally implemented to allow this prototype to see the light of day.
 
