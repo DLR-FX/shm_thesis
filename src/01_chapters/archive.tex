@@ -1,0 +1,50 @@
+
+An alternate method for fusion of redundant sensors is proposed that is similar to voting algorithms employed by Flight Control Systems of \cite{tischler_advances_2018}. An issue for voting algorithms is the abrupt exclusion of single sensors once their difference to the other sensors is too large. Hence, a weighting strategy for averaging is proposed that is based on the value difference.
+
+An example is shown in figure \ref{fig:fusing_method}
+
+This method tries to account dynamically for sensor distance by scaling parameters to small values compared to their neighbours. This works for a minimum of three redundant values.
+
+Based on the single sensor values a distance matrix for $d_{i,j}$ is set up.
+
+% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+\begin{table}[]
+    \begin{tabular}{@{}llll@{}}
+        \toprule                 & A    & B    & C    \\ \midrule
+        \multicolumn{1}{l|}{A}   & 0    & 0.25 & 2    \\
+        \multicolumn{1}{l|}{B}   & 0.25 & 0    & 1.75 \\
+        \multicolumn{1}{l|}{C}   & 2    & 1.75 & 0    \\ \midrule
+        \multicolumn{1}{l|}{Sum} & 2.25 & 2    & 3.75 \\ \bottomrule
+    \end{tabular}
+\end{table}
+
+The column sum is then further defined $\hat{d_{i}}$. To generate a ratio we define:
+
+\begin{equation}
+    w_i=\frac{1}{\hat{d_i}}
+    \label{eq:fusing_weight}
+\end{equation}
+
+Since we desire that
+$\sum{w_i}\overset{!}{=}1$ we need to scale the ratios using:
+
+\begin{equation}
+    \bar{w_{i}} = \frac{w_i}{\sum{w_i}}
+\end{equation}
+
+
+With this ratio we can now calculate the new fused value:
+
+\begin{equation}
+    \bar{x} = \sum_{i}^{n} x_i \cdot \bar{w_{i}}
+\end{equation}
+
+This works out to a fused value that is shown in \ref{fig:fusing_algo}.
+
+Compare results with averaging here using figure.
+
+To further increase sensitivity for distance we can replace the term in equation \ref{eq:fusing_weight} with a quadratic term:
+\begin{equation}
+    w_i=\frac{1}{\hat{d_i}^2}
+\end{equation}

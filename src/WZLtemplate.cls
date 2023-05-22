@@ -161,6 +161,7 @@ citecolor=black
   {\par\vspace{\abovedisplayskip}\noindent\begin{tabular}{>{$}l<{$} @{${}={}$} l}}
   {\end{tabular}\par\vspace{\belowdisplayskip}}
 
+
 %% Add acronyms
 %TODO comment nolist
 \RequirePackage[
@@ -171,6 +172,7 @@ citecolor=black
 	nolist
 	]{acronym}
 
+\RequirePackage{emoji}
 %% Required for including any kind of graphical images
 \RequirePackage{graphicx}
 

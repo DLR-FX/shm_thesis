@@ -20,6 +20,16 @@ An interactive frontend for the data report enables Accessibility of the SHM. En
 
 \section{Check testing 1,2,3 (test with real data)}
 
+
+
+
+Since the IMC DAQ System resamples the 20Hz Sensors to a straight timeframe data gets lost in the process. This makes potentially noisy sensors output the same value twice in a row since the DAQ hasn't yet received the new sensor data and outputs the same value multiple times in a row. Even sensors with a high noise ratio such as the fine part of a gps latitude signal outputs the same value twice in a row which is highly unlikely to happen on a statistical basis. Since this occurs quite often the question arises if the actual sampling may be lower than the actual data.
+
+
+
+
+
+
 Show plots of
 \paragraph{Check with faulty data (Plots and comparisons)}
 see onenote sensor errors
@@ -106,6 +116,10 @@ I.e. wrong config does not require the data to be reuploaded.
 
 
 \section{Discussion/Potential}
+
+-lvl2:Of course, this topic could be examined within a depth that may exceed this work such as estimating white noise using discrete fourier Transform Subspace Decompositions \cite{hendriks_noise_2008} or statistical methods such as covariance operators.
+
+The goal of this work however, is preservation of scalability, minimal user and configuration inputs.
 
 Implementation list:tryouts
 -lvl3 rigid body simulation for flight dynamics

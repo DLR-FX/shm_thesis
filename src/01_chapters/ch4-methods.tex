@@ -2,6 +2,13 @@
 
 The implementation efforts of this thesis are condensed into the following chapter. A holistic perspective on the data process is described in the following step following from the urgency that Sensor Health Monitoring needs to be perceived within its ecosystem. A SHM thus is directly reliant upon the data in the first place. It is then also reliant upon the configuration metadata since it will contain necessary information for processing the data further within the SHM. To then close the feedback loop it is also vital to generate a sensible data display that allows quick evaluation of the SHM since manual evaluation methods would slow the development process by orders of magnitude.
 
+And: The implementation and methods are compounded to reach a thematic
+
+But:
+
+
+Therefore
+
 
 \section{Introduction}
 
@@ -22,7 +29,7 @@ The implementation can be detailed by figure \ref{fig:fti_microservices}. After 
 
 Since the data the SHM will work on orginates from the airplane and needs to uploaded without any modification to preserve originality this small section will deal with the handling of data from the aircraft until it reaches its destination in the skystash.
 
-The Data is uploaded to the stash from the aircraft DAQ format. Its data is available in the proprietary  IMC .raw formats. These are then parsed into the stash by converting them into timeseries for each parameter. The data structure used in the skystash is represented in figure \ref{fig:skystash_folder_structure}. The folder structure's main path is the project folder which represents the project in which the flight was performed in and contains all the project's flights. Each flight then contains parameter measurements which represent the lowest level of objects in the architecture. All objects of project, flight or measurement type can also contain JSON-usertags as well as additional data in binary format such as pdf files.
+The Data is uploaded to the stash from the aircraft DAQ format. Its data is available in the proprietary IMC .raw formats. These are then parsed into the stash by converting them into timeseries for each parameter. The data structure used in the skystash is represented in figure \ref{fig:skystash_folder_structure}. The folder structure's main path is the project folder which represents the project in which the flight was performed in and contains all the project's flights. Each flight then contains parameter measurements which represent the lowest level of objects in the architecture. All objects of project, flight or measurement type can also contain JSON-usertags as well as additional data in binary format such as pdf files.
 
 \begin{figure}
     \centering
@@ -31,7 +38,6 @@ The Data is uploaded to the stash from the aircraft DAQ format. Its data is avai
     \label{fig:skystash_folder_structure}
 \end{figure}
 
-
 \subsection{Parsing of ISTAR Data}
 %ISTAR data originates from the ISTAR's DAQ system in the shape of .raw files for each parameter and is parsed and uploaded to the stash. It is then accessible via the stash api and can also be inspected in the stash webview. After the Dataset generation step the metadata available is only the one from the ISTAR DAQ system.
 %The data is present in the shape of Projects->Collections->Series
@@ -39,8 +45,7 @@ The Data is uploaded to the stash from the aircraft DAQ format. Its data is avai
 
 To provide a full overview of the entire pipeline this step is mentioned. Starting off, we are left with a directory full of .raw and .imcexp files after a flight. Both are proprietary IMC formats. However, we can distinguish between both insofar that .raw files contain timeseries in an encoded format. The imcexp files then contain the configuration settings for the specific flight/measurement.
 
-The entire directory then gets parsed by a python script. Segmenting the binary structure of the raw files and extracting the timeseries for each parameter.
-The DAQ and aircraft sensor config for each flight gets exported from the imcexp file and uploaded to the skystash without modification to preserve genuineness of the data as shown in figure \ref{fig:skystash_data_pipeline}. Any Metadata in shape of a JSON format is represented with a red dot and any binary formats such as pdf files or other custom data are represented with a blue dot.
+The entire directory then gets parsed by a python script. Segmenting the binary structure of the raw files and extracting the timeseries for each parameter. The DAQ and aircraft sensor config for each flight gets exported from the imcexp file and uploaded to the skystash without modification to preserve genuineness of the data as shown in figure \ref{fig:skystash_data_pipeline}. Any Metadata in shape of a JSON format is represented with a red dot and any binary formats such as pdf files or other custom data are represented with a blue dot.
 
 \begin{figure}
     \centering
@@ -51,34 +56,50 @@ The DAQ and aircraft sensor config for each flight gets exported from the imcexp
 
 Parameters are saved under the flight object. Config data is assigned to the user tags of each parameter. The data is then parsed for each flight and inherent sensor.
 
-The metadata is currently only the one from the ISTAR DAQ system. Since this metadata needs further information to make it understandable  it will be enriched further within the Configuration step (See figure \ref{fig:fti_microservices}).
+The metadata is currently only the one from the ISTAR DAQ system. Since this metadata needs further information to make it understandable it will be enriched further within the Configuration step (See figure \ref{fig:fti_microservices}).
+
+\newpage
 
 
 \section{Configuration-Metadata}
 
 The configuration from the previous step has now been uploaded to the skystash. It describes the actual flight-dependent DAQ configuration and changes for every flight. It is, however, not complete. Since the DAQ only saves data relevant to itself, other vital metadata for users as well as the SHM are not present. In this section a method is implemented to enrich the DAQ metadata by transforming it into a common metadata format as well as appending useful additional metadata to each sensor and the flight.
 
+%-This step details the considerations and implementations taken to be able to generate a useful metadata model that applies necessary information to the dataset within the skystash.
 
-Generally, metadata exists in two forms. the actual flight-dependent DAQ config and the permanently valid metadata config that principally does not change.
-The actual config is different for each flight since it represents changes made by Flight Test Engineers to fit the DAQ-configuration the specific flight experiment. The permanent config however represents all additional info that may be relevant to a varied pool of users.
+\subsection{Why?}
 
+%§ Metadata from DAQ sensible and up-to-date but incomplete
+%-incomplete metadata
+%-Metadata is not complete yet. -does only contain info from DAQ which represents only the info the DAQ needs. What about all the other information that is not in the DAQ?
 
-
-
-define temporary config (DAQ), permanent config (local).
-demands:
--central metadata type to represent all data. eliminate multiple inputs of metadata.
---> collect all metadata in a single file/object
-optimally in an already common format. (transition to SOIL)
+The DAQ configuration in itself is very essential but also incomplete in that is does not yet contain necessary information for detecting errors within our data. To achieve this we need to enhance our metadata from the DAQ with additional data. This permanent, generally unchanging metadata is first specified locally and contains values such as boundaries for level 2 or tags for level 3 to correlate parameters to each other. It is also specified for each parameter individually. It is then also possible to assign values such as frequency locally.
 
 
-Q: Why?
-E:-Metadata is not complete yet. -does only contain info from DAQ which represents only the info the DAQ needs. What about all the other information that is not in the DAQ?
--This step details the considerations and implementations taken to be able to generate a useful metadata model that applies necessary information to the dataset within the skystash.
--especially useful since locally defined metadata is not up-to-date and DAQ metada is not complete. Necessary to additionally add data relevant to the checks for each parameter.
-C: Metadata from DAQ represents limited view
+%§ SHM-info not available in DAQ-metadata, e.g. positional of sensors not available -shm info necessary
 
-As previously discussed in chapter \ref{chap:2-metadata-format}, a common format for exchanging metadata is needed. Within the following the implementation details as well as the used methods are described.
+This necessitates a merging/fusion step of DAQ-config with the locally defined permanent metadata. This is especially useful since this locally defined metadata is not up-to-date and DAQ metada is not complete. It also Necessary to additionally add data relevant to the checks for each parameter.
+
+%§ Input needed for SHM with all necessary infos
+
+\subsubsection{Requirements}
+%What is the Goal?
+
+%§ Enrichment of Metadata
+Leveraging these requirements we can define two goals for the configuration step.
+\begin{enumerate}
+    \item Enrichment of Metadata
+    \item Conversion into a standardized format
+\end{enumerate}
+These two steps guarantee a similarity across processes which will also pay off once the SHM process may expand to other applications. The standardized format also supports the desire for FAIR principles since it allows to input data from various sources into the SHM data processing algorithm.
+
+Additional attributes that are needed are aircraft specific information such as position of sensors within the aircraft Coordinate System (COS), the actual position of the COS relative to the aircraft and its orientation as well. For the SHM Level 2 physical limits as well as amplitudes for STFT are needed. For Level 3, only the parameter tag, defining its meaning in the application context such as \textit{static pressure} and an eventual reference parameter is defined. The reference defines context or calibration and defines the \textit{reference pressure} in the case of the \textit{static pressure}.
+
+Generally, metadata exists in two forms. the actual flight-dependent DAQ config and the permanently valid metadata config that principally does not change. The actual config is different for each flight since it represents changes made by Flight Test Engineers to fit the DAQ-configuration the specific flight experiment. The permanent config however represents all additional info that may be relevant to a varied pool of users.
+
+
+%§ Conversion into a standardized DAQ-independent format
+Once a merged data construct is reached it needs to be converted into a usable, standardized format. For this step, some candidates from Internet of Things (IoT) applications have already been examined in \textcite{bodenbenner_model-driven_2022}. For the pipeline to the data processing the metadata can then be transformed into the SensOr Interfacing Language (SOIL), allowing a concise, specified format for this essential metadata.
 
 \begin{figure}
     \centering
@@ -87,40 +108,18 @@ As previously discussed in chapter \ref{chap:2-metadata-format}, a common format
     \label{fig:skystash_metadata_pipeline}
 \end{figure}
 
-The metadata enrichment process is described in Figure \ref{fig:skystash_metadata_pipeline} starting with
-data and metadata that is available in the skystash and unmodified. This unmodified data then gets enriched with metadata that is available locally and helping to contextualize the metadata from the skystash by merging it with local metadata and parsing it into a SOIL-format.
-In this step other SHM attributes get assigned such as checking limits for level 2 and variable tags for level 3 defining the meaning of a parameter.
-Since the metadata uploaded to the stash in itself is not very expressive and cryptic it needs to be refined further into a usable, concise format.
+\subsubsection{Implementation}
+%implementation
+%\\§ Accumulation of required metadata that needs to be supplemented
+Required data then needs to be defined locally. For this, an already existing database is taken as a starting point. This database is in the shape of an excel file and will be used for development. In further steps it might be reasonable to migrate this database to a different format to guarantee true provenance for configuration information. However, this is reserved for a later point. It suffices for now and will be expanded for columns that can add attributes for each parameter such as the aforementioned level 2 and 3 requirements and also additional data that may be of interest for users in the skystash such as sensor position in the aircraft. This is shown in figure \ref{fig:skystash_data_pipeline} within the config and metadata elements that represent permanent config info and the metadata for the steps.
 
+The metadata fusion is part of the feedback loop that is in-line with the data processing and feedback. So this step is essential to the process since previously all steps from the SHM-toolchain figure \ref{fig:fti_microservices} had to be performed previously if there had been any marginal changes. Compartmentalizing and modularizing these single steps allows to then accelerate development and testing by not having to parse data within each iteration.
 
+%-The configuration of the ISTAR is of great importance for the data processing. Also of great importance is the knowledge database which is currently in the shape of an excel document.
+Also, attributes that are generally transmitted within the DAQ configuration are sampling rates, data origins and other miscellaneous information related to the system. Not contained are information about general sensor description, position of sensors, overall setup of the aircraft sensor architecture and check limits for data values. To preserve the original DAQ infos as closely as possible the merging step as portrayed in figure \ref{fig:skystash_metadata_merging} is proposed. This way, original DAQ info that is frequently changing such as the frequency gets preserved while still allowing additional data by the permanent local config to be used
 
-
-
-%generate merged view for metadata.--what did i mean by that?
-
-
-What attributes?
--aircraft data
--shm data
--limits
--type
--tags
--reference COS
--get excel data
--get parameter metadata
--get flight metadata
-
-Additional Metadata:
--physical limits
--amplitude limits
--tag (physical entity)
--reference ()
-
-
-Q:how does metadata get collected?
-The configuration of the ISTAR is of great importance for the data processing. Also of great importance is the knowledge database which is currently in the shape of an excel document.
-Attributes that are generally transmitted within the DAQ configuration are sampling rates, data origins and other miscellaneous information related to the system. Not contained are information about general sensor description, position of sensors, overall setup of the aircraft sensor architecture and check limits for data values. To preserve the original DAQ infos as closely as possible a merging as portrayed in figure \ref{fig:skystash_metadata_merging} is proposed. This way, original DAQ info that is frequently changing such as the frequency gets preserved while still allowing additional data by the permanent local config to be used
-
+%\\§ Fusioning of Metadata with Priorization of DAQ data
+The metadata enrichment process is described in Figure \ref{fig:skystash_metadata_pipeline} starting with data and metadata that is available in the skystash and unmodified. This unmodified data then gets enriched with metadata for parameters that are not already described by the DAQ config. In this step other SHM attributes get assigned such as checking limits for level 2 and variable tags for level 3 defining the meaning of a parameter. Since the metadata uploaded to the stash in itself is not very expressive and cryptic it needs to be refined further into a usable, concise format.
 \begin{figure}
     \centering
     \includegraphics{skystash_metadata_merging}
@@ -129,69 +128,134 @@ Attributes that are generally transmitted within the DAQ configuration are sampl
 \end{figure}
 
 
+%\\§ Then translation/conversion into standardized SOIL format
+As previously discussed in chapter \ref{chap:2-metadata-format}, a common format for exchanging metadata is needed. Following Fusion, the data is now available in a JSON format that contains the previously defined attributes for each parameter. To increase standardization a further conversion into the SensOr Interfacing Language is considered. This could increase acceptance and standardization since it is starting to be increasingly used within IoT contexts. A proposed structure would contain single sensors as parent elements and components containing the appended attributes. \cite{behrens_domain-specific_2021}
 
+\subsubsection{Summary}
+%§ Generating additional metadata
+A central format for metadata has now been agreed upon. Especially data flows have been determined which strongly facilitates further development by structuring input and output operations. Primarily, the place to define further metadata attributes has been defined and the step to compile it within the configuration data merge step. Naturally, this will have to be changed further within further development. This method however condenses work into one single place.
+%§ Fusion of metadata sets
+The incomplete metadata from the DAQ has been enriched with the locally available metadata such as additional knowledge about the aircraft, the sensors itself and its context. Also, necessary data for the SHM step has been added such as limits for checks as well as tagging parameters for physical correlation checks which has been fused into a single data structure.
+%§Conversion into standardized format
+After compiling various inputs into a single metadata structure a common format has also been found. SOIL has been examined for usage and implementation is intended for future use.
 
-
-we take the DAQ-config and merge it with the excel/other data into a JSON-format
-
-Q: what has been reached in this step?
-E: -the incomplete metadata from the DAQ has been enriched with the locally available metadata such as additional knowledge about the aircraft, the sensors itself and its context. Also, necessary data for the SHM step has been added such as limits for checks as well as tagging parameters for physical correlation checks.
+\newpage
 
 
 \section{Data Processing}
+Now, we can sort out the vital step of this work. Taking the inputs of data and metadata with the configuration needed and implementing sensible logic to reliably detect anomalies in the data. This will first be preceeded by some considerations about software architecture and then delving into the specific methods for FMEA.
 
 \subsection{Software architecture considerations}
+%todo: check mention of :				□ Modularity	□ Modifiability □ Reusability □ Quick Feedback
 
-Careful consideration needs to be given to the workflow of the level 1 check to allow scalability and minimal manual interaction in later stages. To achieve this architecture, manual steps are reduced as far as possible. However, some level of configuration must be implemented. Otherwise only relational sensor behaviour could be detected. Meaning that sensor faults occuring temporarily within an experiment can be detected but permanent behaviour is not noticed by a relative algorithm
+
+Careful consideration needs to be given to the workflow of the level 1 check to allow scalability and reduce manual interaction. To achieve this architecture manual steps are reduced as far as possible. However, some level of configuration must be implemented otherwise only relational sensor behaviour could be detected. Meaning that sensor faults occuring temporarily within an experiment can be detected but permanent behavior is not noticed by a relative algorithm e.g. only detecting strong aberration. To satisfy this desire for information the preceeding metadata configuration step in chapter \ref{chap:2-metadata-format} is implemented.
 
 \subsection{Check 1 Implementation}
-For implementing the level 1 checks, the measured data needs to be compared to the expected data. To gain insight into what the the expected data is, the configuration file of the data acquisitioning system needs to get parsed.
-Luckily, the DAQ's format is a .zip directory.
-The 7zip command line tool gets used for opening the configuration file since the configuration file's format is not fully complying to the zip standard making several python libraries fail during the process. This stems from an issue with the zip header and footer parts of the file that are not at expected places (i.e.\ the front the back).
-Once opened, the configuration file contains multiple files as well as an essential xml file that contains the needed sensor metadata.
+For implementing the level 1 checks, the measured data needs to be compared to the expected data. To gain insight into what the the expected data is, the configuration file of the data acquisitioning system needs to get parsed as presented in chapter \ref{chap:2-metadata-format}.
 
-Missing datasets can now easily be found by comparing the expected values from the configuration file to the actual generated data.
+It is possible to export the DAQ flight-specific configuration within the software \textit{IMC Studio}. This reads .imcexp files and then allows export into a .xml format. Downsides are though that various manual steps are involved in this process and it is thus prone to errors. So, we naturally attempt to automate it.
 
-For the second step.
+It turns out that the DAQ's imcexp format is in fact a .zip directory. The 7zip command line tool allows opening the configuration file since the configuration file's format is not fully complying to the zip standard making several python libraries fail during the process. This stems from an issue with the zip header and footer parts of the file that are not at expected places (effectively in the front and back). Once opened, the configuration file contains multiple files as well as an essential xml file that contains the needed sensor metadata. After some formatting these .imcexp can be read straight to generate similar info to the \textit{IMC Studio} workflow.
 
-\subsubsection{All Parameters present?}
+The expected data then can be extracted from the .imcexp files and allows quick comparison against the actually generated data. This resolves the Level 1 implementation.
 
 \subsection{Check 2 Implementation}
-Since the IMC DAQ System resamples the 20Hz Sensors to a straight timeframe data gets lost in the process. This makes potentially noisy sensors output the same value twice in a row since the DAQ hasn't yet received the new sensor data and outputs the same value multiple times in a row. Even sensors with a high noise ratio such as the fine part of a gps latitude signal outputs the same value twice in a row which is highly unlikely to happen on a statistical basis. Since this occurs quite often the question arises if the actual sampling may be lower than the actual data.
 
-\subsubsection{ No signal (value)}
+Within Level 2, the sensor timeseries get checked by themselves without contextualization of other sensor data. This gets accomplished by principally checking them against predefined limits as shown in figure \ref{fig:level_2_flow}.
+
+Use Cases for this are primarily the two implementations:
+
+\begin{enumerate}
+    \item unmodified signal
+    \item noise amplitude by using STFT amplitude \ref{chap:2-plausibility}
+\end{enumerate}
+
+\subsubsection{Methods}
+
+The general workflow consists of getting the timeseries of the signal from the skystash database, then transforming it in some respect and then checking it against limits.
+%how it works
+%• How does it generally work?
+%□ It checks all parameters against a range and notes the values and timestamps where limits where exceeded.
+%□ It then saves them into a json file for the type of check that was performed (value out of limits, movement out of limits
+
+\begin{figure}
+    \centering
+    \includegraphics{level_2_flow}
+    \caption{Checking Logic for every type of level 2 function.}
+    \label{fig:level_2_flow}
+\end{figure}
+
+The logic in this step can then generally be summarized in equation \ref{eq:level_2} with $l$ being the limit that is checked against.
+\begin{equation}
+    f_{report}(t) = \left\{\begin{array}{rcll}
+                               t:True & \mbox{for} & f_{value}(t) < l_{min} \vee f_{value}(t) > l_{max} \\
+                               None   & \mbox{for} & l_{min} < f_{value}(t) < l_{max}
+    \end{array}\right
+    \label{eq:level_2}
+\end{equation}
+
+The context $f_{value}(t) = g(f(t))$ is additionally used. Representing any transformation operation as the function $g$.
+
+\subsubsection{Invalid value}
+
 A check implementation counterchecking the sensors sampling that generates fault detections based on deviation from predefined sampling. This takes into account the DAQ config since it contains the current sampling rate. Minimizing false positives.
 
+This method is necessitated by the simple absence of \textit{None} or any kind of invalid values in the skystash. Meaning that such values are simply not present. To detect \textit{None} values we then are presented with two options:
+
+\begin{enumerate}
+    \item check parameter start and stop time
+    \item check sampling rate
+\end{enumerate}
+
+We could also check for values remaining unchanged for longer times. This will be part of the section of \textit{sensor movement} mentioned below.
+
 \subsubsection{Out of range}
-Generally, predefined limits are checked within SHM Level 2. For the first step, values are checked whether they are within a predefined range. This means e.g. a range of -1000-40000 ft for barometric altitudes. or 1Pa-120000Pa for static pressure ports. Of course, this selection is biased and may not be accurate for most mission profiles like atmospheric research aircraft that cruise in altitudes of up to 45,000 ft MSL.
+Generally, predefined limits are checked within SHM Level 2. For the first step, values are checked whether they are within a predefined range. This means ranges such as defined in Table \ref{tab:level_2_range}. Of course, this selection is biased and may not be accurate for most mission profiles like atmospheric research aircraft that cruise in altitudes of up to 45,000 ft MSL.
 
-\subsubsection{movement too high}
-The next category examining the sensor behaviour can be classified into sensor movement being too low or sensor movement being too high. Movement being defined within this context as the difference of a new sensor value to the previous one. Of course, this topic could be examined within a depth that may exceed this work such as estimating white noise using discrete fourier Transform Subspace Decompositions \cite{hendriks_noise_2008} or statistical methods such as covariance operators.
+% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+\begin{table}[]
+    \centering
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        Parameter           & Minimum & Maximum   \\ \midrule
+        Barometric Altitude & -1000ft & 40,000ft  \\
+        Static Pressure     & 1Pa     & 120,000Pa \\ \bottomrule
+    \end{tabular}
+    \caption{Exemplary limits for checking parameters}
+    \label{tab:level_2_range}
+\end{table}
 
-The goal of this work however, is preservation of scalability, minimal user and configuration inputs. Hence, an approach using a STFT where the amplitude is averaged across all frequencies from its spectrum. This guarantees a generalized feature extraction, meaning standardization. Based on this spectral analysis, the logarithmic order of the variable can be estimated within its dataset. Previously, the frequency is assumed via time difference of start and end time divided by $n_{datapoints}$. The STFT also implements preprocessing steps that would otherwise be necessary such as translating the signal by its average value as well as scaling it by its standard deviation. Would one be interested in examining a signal using functions from a statistical toolbox, a similar result may be achieved by performing the previous steps of averaging and scaling the signal and then examining the variance within a moving window of the signal, similar to the STFT. The size of the moving window for such an analysis is defaulted to 256 data points for each signal. Certain issues with methods of moving windows are however, that they are not very meaningful for the beginning and ending of datasets within which the window is not fully occupied. This may lead to spikes for the STFT, which is why it is found that the STFT is generally more powerful to examine low sensor movement.
+\subsubsection{Movement check}
+\label{chap:4-level_2_movement}
+The next category examining the sensor behaviour can be classified into sensor movement being too low or sensor movement being too high. Movement being defined within this context as the difference of a new sensor value to the previous one.
 
-TODO: Comparison variance, standard deviation, mean noise. Scalability for other sensors.
+Hence, an approach using a STFT is chosen in which the amplitude is averaged across all frequencies from its spectrum. This guarantees a generalized feature extraction, resulting in standardization for parameters. Based on this spectral analysis, the logarithmic order of the variable can be estimated within its dataset. Previously, the frequency is assumed via time difference of start and end time divided by $n_{datapoints}$. The STFT also implements preprocessing steps that would otherwise be necessary such as translating the signal by its average value as well as scaling it by its standard deviation. Would one be interested in examining a signal using functions from a statistical toolbox, a similar result may be achieved by performing the previous steps of averaging and scaling the signal and then examining the variance within a moving window of the signal, similar to the STFT. The size of the moving window for such an analysis is defaulted to 256 data points for each signal. Certain issues with methods of moving windows are however, that they are not very meaningful for the beginning and ending of datasets within which the window is not fully occupied. This may lead to spikes for the STFT, which is why it is found that the STFT is generally more powerful to examine insufficient sensor movement.
 
-Noise Tracking using DFT can be used to estimate noise combined with a strenuous effort
-Since this however would exceed the scope of this work, a simpler algorithm is implemented by comparing moving window variance as well as STFT overall amplitude estimations.
+This can be described in equation \ref{eq:level_2_movement_check} as:
+\begin{equation}
+    g(f(t)) = \frac{1}{n}\sum_{m}^{n} F(m,t)
+    \label{eq:level_2_movement_check}
+\end{equation}
+\begin{conditions}
+    m                          & frequency                                 \\
+    n                          & amount of frequency points                \\
+    X(m,t) = \mbox{STFT}(f(t)) & the STFT of f \cite{smith_scientist_1999} \\
+\end{conditions}
 
-Limits of variance and stdev.
-
-To better approximate the errors concerning white noise, a STFT is employed.
-
-White noise approximation methods. Rolling window variance.
-
-\subsubsection{ movement too low}
+\newpage
 
 \subsection{Check 3 Implementation: }
+
+
 
 I lied about single source of config. Level 2 and 3 also have their own config.
 
 avoid weighting by structuring checks into a tree format for independent aircraft state variables.
 
 
-Aims of Level 3 Implementation are to model the aircraft's state in a reference system.
-This reference system shall be geodetic and fixed to the earth while the aircraft moves through it. Moving aircraft coordinate systems like the aerodynamic and the along track Coordinate system may be derived from its geodetic position using ?angles and velocities.
+Aims of Level 3 Implementation are to model the aircraft's state in a reference system. This reference system shall be geodetic and fixed to the earth while the aircraft moves through it. Moving aircraft coordinate systems like the aerodynamic and the along track Coordinate system may be derived from its geodetic position using ?angles and velocities.
 
 
 Interfacing: Clean interfaces are generated throughout the model. Enabling a standardized state vector x. Meaning that A remains standardized for any aircraft while B, U and L need to be adjusted for any changes to the aircraft or sensor data.
@@ -200,11 +264,13 @@ The integration step may be omitted in early design stages since the necessary e
 
 \subsubsection{Finding a reference state}
 
+% todo: An aircraft position and state can be interpreted in various Coordinate Systems. To calculate a model it is first important to determine a single state that may be the principal coordinate system from which all other coordinate systems may be derived.
+
+% cite flugdynamik skript
+
 Necessary to compare parameters is a common reference system. Hence, reference systems are examined upon suitability for usage of parameter transformations.
 
-A starting point which shall be considered is the geodetic reference.
-it measures the aircraft's position by its displacement from the previously (ref?) discussed WGS84 system.
-Meaning that altitude gets measured as the orthometric height (see ellipsoid height-geoid height).
+A starting point which shall be considered is the geodetic reference. it measures the aircraft's position by its displacement from the previously (ref?) discussed WGS84 system. Meaning that altitude gets measured as the orthometric height (see ellipsoid height-geoid height).
 
 Latitude and Longitude form the x and y axis of the COS. True heading forms the reference heading within the geodetic system.
 
@@ -231,56 +297,7 @@ In figure \ref{fig:level3_config} the general structure of the dynamic configura
 Based upon this previously defined model that is based on the aircraft configuration as a tree structure, residuals are generated based upon the difference of the parameters to the top level parameters (Single, fused value) and the single transformed sensor values (All Parameters) as previously discussed in Table \ref{tab:states_and_signals}.
 
 
-An alternate method for fusion of redundant sensors is proposed that is similar to voting algorithms employed by Flight Control Systems of \cite{tischler_advances_2018}. An issue for voting algorithms is the abrupt exclusion of single sensors once their difference to the other sensors is too large. Hence, a weighting strategy for averaging is proposed that is based on the value difference.
 
-An example is shown in figure \ref{fig:fusing_method}
-
-This method tries to account dynamically for sensor distance by scaling parameters to small values compared to their neighbours. This works for a minimum of three redundant values.
-
-Based on the single sensor values a distance matrix for $d_{i,j}$ is set up.
-
-% Please add the following required packages to your document preamble:
-% \usepackage{booktabs}
-\begin{table}[]
-    \begin{tabular}{@{}llll@{}}
-        \toprule
-        & A    & B    & C    \\ \midrule
-        \multicolumn{1}{l|}{A}   & 0    & 0.25 & 2    \\
-        \multicolumn{1}{l|}{B}   & 0.25 & 0    & 1.75 \\
-        \multicolumn{1}{l|}{C}   & 2    & 1.75 & 0    \\ \midrule
-        \multicolumn{1}{l|}{Sum} & 2.25 & 2    & 3.75 \\ \bottomrule
-    \end{tabular}
-\end{table}
-
-The column sum is then further defined $\hat{d_{i}}$. To generate a ratio we define:
-
-\begin{equation}
-    w_i=\frac{1}{\hat{d_i}}
-    \label{eq:fusing_weight}
-\end{equation}
-
-Since we desire that
-$\sum{w_i}\overset{!}{=}1$ we need to scale the ratios using:
-
-\begin{equation}
-    \bar{w_{i}} = \frac{w_i}{\sum{w_i}}
-\end{equation}
-
-
-With this ratio we can now calculate the new fused value:
-
-\begin{equation}
-    \bar{x} = \sum_{i}^{n} x_i \cdot \bar{w_{i}}
-\end{equation}
-
-This works out to a fused value that is shown in \ref{fig:fusing_algo}.
-
-Compare results with averaging here using figure.
-
-To further increase sensitivity for distance we can replace the term in equation \ref{eq:fusing_weight} with a quadratic term:
-\begin{equation}
-        w_i=\frac{1}{\hat{d_i}^2}
-\end{equation}
 \paragraph{Residual Interpretation}
 
 
@@ -306,11 +323,9 @@ Difficulty diagnosing sensors without previous knowledge. limitations within sen
 
 Relative examinations possible for errors occuring for finite time within experiment but not if all of the experiment data is corrupt.
 
-\paragraph{altitude comparison}
+\paragraph{Altitude Comparison}
 
-plot here:
--gps to gps
--gps to baro. Beta overlayed as well as Ma Number
+plot here: -gps to gps -gps to baro. Beta overlayed as well as Ma Number
 
 
 some mean ground has to be found to crossreference the various altitudes.
@@ -331,23 +346,39 @@ Explain here why orthometric and ellipsoid value differs (vector difference, cg)
 
 GNSS-units work with geoid models to deliver an orthometric value. Different Geoid models have different drawbacks and resolutions. For aviation use, the World Geodetic System (WGS84) generally proposes a geoid model that is used. Within this works scope it is omitted to implement an existing geoid model into the software-loop to reserve this workload for a later time.
 
-
+\newpage
 \section{Report Visualization}
 
-Motivation:
+
+An interactive data report is developed for data analytics instead of a pdf type report since it works more efficiently and rather follows the paradigma of a single source of truth since it allows for dynamic updates and thus does not represent a data source in itself but rather view on the source facilitating updates on the data.
+An interactive report then needs to be able to quickly gain an overview over state of sensors. It is also an effective tool to develop FMEA implementations and accelerate development by closing the feedback loop.
+
+%And But Therefore
 
 
-An interactive data report is chosen for data analytics since it works more efficiently and rather follows the paradigma of a single source of truth since it allows for dynamic updates and thus does not represent a data source in itself but rather view on the source.
-
-
-Requirements:
-needs to be able to quickly gain an overview over state of sensors. Details can be looked up later. UX-centric design.
-Level1: Quickly see if many sensors are missing
-Level2: Identify outliers
+\begin{figure}
+    \centering
+    \includegraphics{stashboard_screenshot_1}
+    \caption{Stashboard webbased analytic Tool }
+    \label{fig:stashboard_1}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics{stashboard_screenshot_2}
+    \caption{Level 1,2,3}
+    \label{fig:stashboard_2}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics{stashboard_screenshot_3}
+    \caption{Level 3 Analysis}
+    \label{fig:stashboard_3}
+\end{figure}
 
 \subsection{Visualization}
+A main paradigm of this visualization is that it prioritizes qualitative over quantitative design. Meaning that it does not mention explicit details but allows to comprehend and retrace the qualitative FMEA results. It shall be a UX-centric design with the possibility of identifying outliers or oversensitive SHM config parameters. Level1: Quickly see if many sensors are missing Level2: Identify outliers
 
-\paragraph{of missing parameter list}
+\paragraph{Parameter Availability}
 After monitoring, a list of missing parameters is generated. To show and detect this info quickly, a speed gauge style display is chosen to display this scalar value.
 
 \paragraph{Displaying notable occurences of single sensor examination}
@@ -358,8 +389,7 @@ Possible features: implement altitude graph later to contextualize sensor behavi
 
 \paragraph{Examining sensor interactions}
 
-whole flight: occurences
-Single sensor: mean value, residual, stdev
+whole flight: occurences Single sensor: mean value, residual, stdev
 
 
 %\subsection{ Upload of JSON to stash}
