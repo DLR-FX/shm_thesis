@@ -26,6 +26,11 @@ An interactive frontend for the data report enables Accessibility of the SHM. En
 Since the IMC DAQ System resamples the 20Hz Sensors to a straight timeframe data gets lost in the process. This makes potentially noisy sensors output the same value twice in a row since the DAQ hasn't yet received the new sensor data and outputs the same value multiple times in a row. Even sensors with a high noise ratio such as the fine part of a gps latitude signal outputs the same value twice in a row which is highly unlikely to happen on a statistical basis. Since this occurs quite often the question arises if the actual sampling may be lower than the actual data.
 
 
+\subsection{Sensitivity Tuning}
+%pasted from ch4
+The validation loop is driven by previously known error types (See OneNote Sensor Errors)
+
+It shows that while conservatively chosen ranges do not indicate many occurences, tighter limits enable more detailed monitoring.
 
 
 

@@ -249,160 +249,198 @@ This can be described in equation \ref{eq:level_2_movement_check} as:
 \subsection{Check 3 Implementation: }
 
 
+Aims of Level 3 Implementation are to model the aircraft's state in a reference system. Parameters are present in various reference systems as well as in redundancy. Within this section the issues arising from the merging from parameters will be the main topic, accompanied by how to implement the necessary data.
 
-I lied about single source of config. Level 2 and 3 also have their own config.
+First, a common reference state will be defined for checks, then the Parity function \cite{chap:parity_equation} will be implemented and then the topic of how to deal with data input and output on a large scale will be discussed.
 
-avoid weighting by structuring checks into a tree format for independent aircraft state variables.
+\paragraph{Finding a reference state}
+
+%And
+As discussed many parameters are available that allow backtracing onto a single state variable of the aircraft. They are also available in various COS.
+
+%But
+Aircraft position and state can be interpreted in various Coordinate Systems. It is also necessary to compare redundant parameters within these varied reference systems. Hence, the reduction of the various reference systems onto a single reference system is necessary to guarantee comparability.
+
+%Therefore
+Since the geodetic reference system is best described by the GNSS and Inertial Measuring Unit (IMU) it will be used in the following as a reference system for calculations. Additionally, moving aircraft coordinate systems like the aerodynamic and the along track Coordinate system may be derived using known transformation angles and velocities. \cite{brockhaus_flugregelung_2011}
 
 
-Aims of Level 3 Implementation are to model the aircraft's state in a reference system. This reference system shall be geodetic and fixed to the earth while the aircraft moves through it. Moving aircraft coordinate systems like the aerodynamic and the along track Coordinate system may be derived from its geodetic position using ?angles and velocities.
+%Interfacing: Clean interfaces are generated throughout the model. Enabling a standardized state vector x. Meaning that A remains standardized for any aircraft while B, U and L need to be adjusted for any changes to the aircraft or sensor data.
+%A starting point which shall be considered is the geodetic reference. it measures the aircraft's position by its displacement from the previously (ref?) discussed WGS84 system. Meaning that altitude gets measured as the orthometric height (see ellipsoid height-geoid height).
+%Latitude and Longitude form the x and y axis of the COS. True heading forms the reference heading within the geodetic system.
+%All aircraft parameters related to motion and position of the aircraft should be attempted to be condensed into this form.
 
-
-Interfacing: Clean interfaces are generated throughout the model. Enabling a standardized state vector x. Meaning that A remains standardized for any aircraft while B, U and L need to be adjusted for any changes to the aircraft or sensor data.
-
-The integration step may be omitted in early design stages since the necessary equations and equilibriums of Forces and Moments could only be modelled linearly while neglecting various unknown factors like shifting CG due to fuel burn, actual Inertia of Aircraft and aicraft mass. Hence, this step may be implemented if time allows it.
-
-\subsubsection{Finding a reference state}
-
-% todo: An aircraft position and state can be interpreted in various Coordinate Systems. To calculate a model it is first important to determine a single state that may be the principal coordinate system from which all other coordinate systems may be derived.
-
-% cite flugdynamik skript
-
-Necessary to compare parameters is a common reference system. Hence, reference systems are examined upon suitability for usage of parameter transformations.
-
-A starting point which shall be considered is the geodetic reference. it measures the aircraft's position by its displacement from the previously (ref?) discussed WGS84 system. Meaning that altitude gets measured as the orthometric height (see ellipsoid height-geoid height).
-
-Latitude and Longitude form the x and y axis of the COS. True heading forms the reference heading within the geodetic system.
-
-All aircraft parameters related to motion and position of the aircraft should be attempted to be condensed into this form.
+%The integration step may be omitted in early design stages since the necessary equations and equilibriums of Forces and Moments could only be modelled linearly while neglecting various unknown factors like shifting CG due to fuel burn, actual Inertia of Aircraft and aicraft mass. Hence, this step may be implemented if time allows it.
 
 \paragraph{Dynamic configuration and correlation of parameters}
 
-Motivation: a dynamic description for parameter correlations is searched in order to implement an efficient and quick way to assign parameter correlations. It is then assumed that a tree structure is fit for this task since parameters can be correlated to other upstream parameters in a single flow direction.
-
-
-To attach meaning to the parameters, they are specifically tagged with descriptions of their function. A simple example that is implemented is that of \textit{static pressure}. The tag is defined in the excel configuration and furthermore gets configured into a dynamic configuration JSON-file. This file allows specification of sensors into subclasses and divides the aircraft into its degrees of freedom. This tree structure is then parsed and calculates a value for each level of detail taking into account its lower lying neighbours. Some weighting also has to be considered since a number of redundant pressure sensor could skew results against a single GNSS parameter. Thus a condensed parameter is calculated for each degree of freedom that is based on predefined algorithms and tags that can be freely defined within the config file that are then recursively parsed within the tree structure.
+The necessary configuration for the Parity Equations should then be expandable and dynamically adaptable. This means creating a dynamic structure that allows to represent the complex physical aircraft correlations. This includes creating hierarchical configuration information and an algorithm that reads this configuration and then downloads the sensors from the skystash to include them into the essential Level 3 flow represented in figure \ref{fig:level_3_flow}. The detected anomalies then get uploaded to the skystash.
 
 \begin{figure}
     \centering
-    \includegraphics[width=\textwidth]{level3_config}
-    \caption{General structure of physical correlation setup}
-    \label{fig:level3_config}
+    \includegraphics[width=0.8\textwidth]{level_3_flow}
+    \caption{Vector of $y$ is merged in a sensor fusion step to then generate a residual. Limits to evaluate the residual are then generated in the next step followed by the residual evaluation determining if the value is anomalous.}
+    \label{fig:level_3_flow}
 \end{figure}
 
+For the Level 3 configuration and information assignment a data structure similar to the SensOr Interfacing Language is proposed. An exemplary structure is shown in figure \ref{fig:level_3_config}.
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{level_3_config}
+    \caption{General structure of physical correlation setup}
+    \label{fig:level_3_config}
+\end{figure}
 
-In figure \ref{fig:level3_config} the general structure of the dynamic configuration in JSON format is shown. The configuration parent is an element similar to the configuration in SOIL-format \cite{behrens_domain-specific_2021}. In our case the ISTAR-aircraft. The istar aircraft contains top-level components that are the independent state variables of the aircraft. Generally a component can contain other components or parameter tags that describe parameters that are referenced. A component can also contain a function that transforms its parameters into the parent parameter.
+This dynamic description for parameter correlations is required in order to implement an efficient and quick way to assign parameter correlations. It is then assumed that a tree structure is fit for this task since parameters can be correlated to other upstream parameters by using a single flow direction. A more detailed view in a Universal Markup Language (UML) graph is shown in figure \ref{fig:level_3_config_uml}. The Class component generally forms the common element in the structure as seen in figure \ref{fig:level_3_config}. It is also notable that Tags as well as Elements inherit from the Components Class and are instances of it. Components possess the attributes of other \textit{components}, their own \textit{name}, the \textit{merged parameter} which represents a single fused value for all parameters below and an attribute containing all lower lying parameters called \textit{all parameters} which contains all parameters. It also contains two functions for firstly merging its components into the merged value and secondly transforming its parameters into a desired state dimension. E.g. converting Static Pressure into a barometric altitude. The current default of these functions consists of relatively rudimentary logic to not transform the parameter and to take the average of values to merge various parameters.
 
-\paragraph{Residual generation}
-Based upon this previously defined model that is based on the aircraft configuration as a tree structure, residuals are generated based upon the difference of the parameters to the top level parameters (Single, fused value) and the single transformed sensor values (All Parameters) as previously discussed in Table \ref{tab:states_and_signals}.
+The inheriting entity \textit{Tag} mainly differs from the \textit{Component} in that it does not contain any subcomponents and contacts the skystash to gather all variables from the database containing the tags that are represented by its name. An optional attribute is a reference or calibration value that is assigned in the permanent configuration database (See chapter: \ref{chap:2-metadata-format}).
+%reference to DAQ and "permanent" database.
+The entity \textit{Element} represents the parent node of the configuration tree. Its only difference to a regular \textit{Component} is that it allows to keep multiple merged_parameters in its view to e.g. allow altitude and speed to coexist and not get erroneously merged.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{level_3_config_uml}
+    \caption{Description of the Level 3 JSON check configuration}
+    \label{fig:level_3_config_uml}
+\end{figure}
+
+%□ Parity implementation within hierarchical method
+Using this configuration method, the Parity model can then be calculated using given methods to transform and fuse the data. This starts by parsing the configuration structure, downloading sensors for each Tag and fusing sensors y into a fused value as defined in the configuration and as shown in figure \ref{fig:level_3_flow}.
+%□ Flow structure
+%□ Config file explanation
 
 
+%In figure \ref{fig:level_3_config, fig:level_3_config_uml} the general structure of the dynamic configuration in JSON format is shown. The configuration parent is a component containing subcomponents that themselves may contain subcomponents.
+
+This system takes inspiration and inherits the configuration structure from the SensOr Interfacing Language (SOIL)\cite{behrens_domain-specific_2021}. In this work's use-case the \textit{Element} ISTAR research aircraft contains top-level components that are the independent state variables of the aircraft. An example that will be invested further in following sections is that of the \textit{static pressure}. The workflow begins by defining the Tag \textit{static pressure} in the permanent configuration and then configuring it into the Level 3-configuration structure. This tree structure is then parsed and calculates a value for each level of detail taking into account its lower lying neighbours. Some weighting also has to be considered since a number of redundant pressure sensor could skew results against a single GNSS parameter. Thus a condensed parameter is calculated for each degree of freedom that is based on predefined algorithms and tags that can be freely defined within the config file that are then recursively parsed within the tree structure.
+%avoid weighting by structuring checks into a tree format for independent aircraft state variables.
+
+\paragraph{Limit Generation}
+Now the fused state value as well as the single, transformed sensor values are present. The next step consists of defining a limit for the resulting residual from combining the fused state with the single sensor value. Naturally, this could be defined manually by e.g. defining a limit of 0.5 meters for an altitude value. Since however automation is sought after, an automatic limit generation is determined as a requirement for dealing with these large data sets.
+
+Statistical methods then are examined for automatically generating thresholds for the parameter values. A method is then implemented to detrend the signal and take the resulting noise as the allowed deviation. In practice this results in a rudimentary Highpass-filter that gets realized by using a moving window function combined with an averaging function with a window width of $n=256$. After using this crude High-Pass Filter to extract noise from the dataset we can acquire the standard deviation of this noisy signal and use it to set the limit for resulting residual evaluation.
+
+%TODO: plot here to visualize action
 
 \paragraph{Residual Interpretation}
 
+After generating the residual as well as the limits for the checks anomalous values get detected by checking whether they are outside the allowed range (see equation \ref{eq:level_2}).
 
-The residuals are then checked against the limits of the standard deviation of the normal signal for a highpass filtering generated by taking a moving window of 256 points. If any value falls outside these values of the standard deviation of the condensed signal it is noted within the report. A fixed residual limit as well as a probability density function implemented in works such as \cite{svard_data-driven_2014} may be implemented at a later point.
+Using this generic approach primarily guarantees quick and easy operations. It remains yet to be seen, how well other methods might perform compared to it. A manually defined residual limit then might guarantee more custom boundaries and using a probability density function (PDF) implemented in works such as \cite{svard_data-driven_2014} may also promise to deliver good results but nonetheless exceeds the scope of this work.
 
-\subsubsection{Examining Altitude Sensors}
+%Based upon the previously defined hierarchical model for Parity Equations residuals are generated based upon the difference of the parameters to the top level parameters (Single, fused value) and the single transformed sensor values (All Parameters) as previously discussed in Table \ref{tab:states_and_signals}.
 
-As seen in~\ref{fig:gps_diff} gps altitudes have a base mean value of difference of about 3-4 meters. During flight level changes the base level changes significantly. Further investigation is needed how these changes may arise.
-
-One possible approach would be considering different placements of gps antennas within the airframe. since the IMAR's position is precisely known and lies around the center of gravity but the ASCB's gps position is not known exactly the process is not facilitated. However using the process of lever arms the position could be roughly estimated and compensated from the altitude difference in figure \ref{fig:gps_diff}.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=.8\textwidth]{gps_difference_imar_ascb}
-    \caption{Comparing the GPS sensors from the internal aircraft GPS (ASCB) to an experimentally installed GPS system (IMAR)}
-    \label{fig:gps_diff}
-\end{figure}
-
-Another incurring deviation is investigating the ~40m/150ft offset for gps altitudes. Possible causes may be Uncorrected Ellipsoid gnss altitudes. However, this appears unlikely since generally the offset in the region would be added and not subtracted [further investigation needed].
-
-
-Difficulty diagnosing sensors without previous knowledge. limitations within sensor behaviour. Checks include: range, too much sensor movement, too few sensor movement.
-
-Relative examinations possible for errors occuring for finite time within experiment but not if all of the experiment data is corrupt.
-
-\paragraph{Altitude Comparison}
-
-plot here: -gps to gps -gps to baro. Beta overlayed as well as Ma Number
-
-
-some mean ground has to be found to crossreference the various altitudes.
-
-For standardization. The SI-unit meters is used for altitudes.
-
-In the first draft. The altitude is sampled with 1Hz for computational speed and since gnss update rates are updated in a similar frequency.
-
-\paragraph{ Physical}
-
-\paragraph{ GNSS}
-
-The following briefly glosses over GNSS and does not delve into the technical details. it rather tries to present GNSS Systems as a black box and examines inputs and outputs.
-
-Generally speaking, GNSS systems calculate position based on run times to satellites. For output GNSS systems return position values for the ellipsoid model of the earth. Since the difference between MSL and ellipsoid varies for up to 100m vertically based on the receivers positions on the earth. Mostly, the difference is in the 40-50m range in germany.
-
-Explain here why orthometric and ellipsoid value differs (vector difference, cg)
-
-GNSS-units work with geoid models to deliver an orthometric value. Different Geoid models have different drawbacks and resolutions. For aviation use, the World Geodetic System (WGS84) generally proposes a geoid model that is used. Within this works scope it is omitted to implement an existing geoid model into the software-loop to reserve this workload for a later time.
 
 \newpage
+
+
 \section{Report Visualization}
 
-
-An interactive data report is developed for data analytics instead of a pdf type report since it works more efficiently and rather follows the paradigma of a single source of truth since it allows for dynamic updates and thus does not represent a data source in itself but rather view on the source facilitating updates on the data.
-An interactive report then needs to be able to quickly gain an overview over state of sensors. It is also an effective tool to develop FMEA implementations and accelerate development by closing the feedback loop.
-
-%And But Therefore
-
-
-\begin{figure}
-    \centering
-    \includegraphics{stashboard_screenshot_1}
-    \caption{Stashboard webbased analytic Tool }
-    \label{fig:stashboard_1}
-\end{figure}
-\begin{figure}
-    \centering
-    \includegraphics{stashboard_screenshot_2}
-    \caption{Level 1,2,3}
-    \label{fig:stashboard_2}
-\end{figure}
-\begin{figure}
-    \centering
-    \includegraphics{stashboard_screenshot_3}
-    \caption{Level 3 Analysis}
-    \label{fig:stashboard_3}
-\end{figure}
+At this point, the data has been checked and a report within a JSON-format has been generated and appended to the skystash flight. The missing parameters have been found, sensor values have been checked by themselves and additionally physical correlations and redundant sensors have been checked. However, FMEA algorithms generally need some tuning to become their most effective and analysing the JSON data takes some time to grasp all peculiarities of the data. Facilitating and Accelerating development, the STASHBOARD is introduced. It is an interactive data report that is developed for data analytics. And instead of a pdf type report it works more efficiently and rather follows the paradigm of a single source of truth. It allows for dynamic updates and thus does not represent a data source in itself but rather view on the source facilitating updates on the data. It allows to quickly gain an overview over the state of sensors and closes the feedback loop in the development cycle.
 
 \subsection{Visualization}
-A main paradigm of this visualization is that it prioritizes qualitative over quantitative design. Meaning that it does not mention explicit details but allows to comprehend and retrace the qualitative FMEA results. It shall be a UX-centric design with the possibility of identifying outliers or oversensitive SHM config parameters. Level1: Quickly see if many sensors are missing Level2: Identify outliers
+A main paradigm of this visualization is that it prioritizes qualitative over quantitative design. Meaning that it does not mention explicit details but allows to comprehend and retrace the qualitative FMEA results. It shall be a UX-centric design with the possibility of identifying outliers or oversensitive SHM config parameters. With Level 1 of the SHM giving a quick overview over Sensor Availability and Level 2 serving as a simple check for any anomalies. Level 3 then serves as a more meaningful way to identify problems in the datasets by showing parameter relations and identifying deeper lying faults.
+
+\paragraph{Timeline}
+
+Often, sensors may deliver erroneous or faulty values which get discarded along the workflow. These values are then plainly missing from the dataset. The Timeline attempts to solve this problem by generating a central overview over start and stop times of each sensor's measurement period. Complementing the timeline with the sampling rate check in Level 2 serves as a method to reliably detect missing sensor values. The Timeline's implementation is shown in figure \ref{fig:stashboard_timeline}.
+
+\begin{figure}[!h]
+    \centering
+    \begin{subfigure}[b]{1\textwidth}
+        \includegraphics[width=0.8\textwidth]{stashboard_timeline}
+        \caption{The sensor timeline}
+        \label{fig:stashboard_timeline_clean}
+    \end{subfigure}
+    \begin{subfigure}[b]{1\textwidth}
+        \includegraphics[width=0.8\textwidth]{stashboard_timeline_interactive}
+        \caption{Interactive tooltip when hovering over a marker}
+        \label{fig:stashboard_timeline_interactive}
+    \end{subfigure}
+    \caption{The Sensor Timeline allows insights into the measurement periods of sensors}
+    \label{fig:stashboard_timeline}
+\end{figure}
+
+The sensor primarily delivers a clean view showing markers for each sensor measurement with start markers being green and stop markers being red in figure \ref{fig:stashboard_timeline_clean}. Once additional information is desired related to an outlying sensor measurement the tooltip of a marker (see figure \ref{fig:stashboard_timeline_interactive}) shows parameter Name as well as the parameter's precise Start and Stop Time. Allowing further investigation by using the skystash architecture.
 
 \paragraph{Parameter Availability}
-After monitoring, a list of missing parameters is generated. To show and detect this info quickly, a speed gauge style display is chosen to display this scalar value.
+After monitoring, a list of missing parameters is generated. To show and detect this info quickly, a speed gauge style display is chosen to display this scalar value as shown in figure \ref{fig:stashboard_speedo}.
 
-\paragraph{Displaying notable occurences of single sensor examination}
-To quickly get an overview of missing parameters, a timeline graph is implemented, showing cumulative errors over the flight. This allows a quick overview over all parameters.
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=0.4\textwidth]{stashboard_speedo}
+    \caption{Displaying the available number of parameters}
+    \label{fig:stashboard_speedo}
+\end{figure}
+The red value is representing the percentage of the standard deviation ($\sigma=68.27\%$) and the yellow area represents double the standard deviation ($2\sigma=95.45\%$).
+
+\paragraph{Level 2: Singular Sensor Examination}
+To quickly get an overview of missing parameters a method to show cumulative errors over the flight is developed (see figure \ref{fig:stashboard_level2}).
+
+\begin{figure}[!h]
+    \centering
+    \begin{subfigure}[b]{1\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{stashboard_level2}
+        \caption{Detected cumulative Faults over time (left), sensors ranked by number of faults (right)}
+        \label{fig:stashboard_level2_clean}
+    \end{subfigure}
+    \begin{subfigure}[b]{1\textwidth}
+        \centering
+        \includegraphics[width=0.9\textwidth]{stashboard_level2_interactive}
+        \caption{Interactive tooltip showing anomalous sensors at timestep}
+        \label{fig:stashboard_level2_interactive}
+    \end{subfigure}
+    \caption{Single Sensor Analysis shows cumulated faults over measuring period and a sensor fault ranking}
+    \label{fig:stashboard_level2}
+\end{figure}
+
+For each type of fault cumulative errors at a given timestep are added across sensors. Then the total number of errors is compounded for each sensor and displayed in a graph bar ranking.
+Specific points of interest on the graph can closer be examined by hovering over them as shown in figure \ref{fig:stashboard_level2_interactive}. The tooltip then shows the exact time of anomaly as well as the detected errors.
 
 
-Possible features: implement altitude graph later to contextualize sensor behaviour.
+\paragraph{Level 3: Examining Sensor Interactions}
 
-\paragraph{Examining sensor interactions}
+The Sensor Interaction and correlation is calculated for each sensor. To then grasp the checked correlations a tree map is employed to display the hierarchical relations that is provided by the SHM-Level 3 configuration file (left in figure \ref{fig:stashboard_level3}).
 
-whole flight: occurences Single sensor: mean value, residual, stdev
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{stashboard_level3}
+    \caption{Level 3}
+    \label{fig:stashboard_level3}
+\end{figure}
 
-
-%\subsection{ Upload of JSON to stash}
-
-
-%\subsection{ Check for errors}
-It shows that while conservatively chosen ranges do not indicate many occurences, tighter limits enable more detailed monitoring.
-
-\subsection{Adapt sensitivity and algorithms (balance false positives)}
-
-The validation loop is driven by previously known error types (See OneNote Sensor Errors)
+Then, the fused state value associated with its upper and lower limits is displayed in the following window. Overlayed, the amount of detected sensor errors is shown, similar to figure \ref{fig:stashboard_level2_clean}. Finally, the average of the residual for each parameter is shown to quantify any occuring bias in the right window.
 
 
+\paragraph{Implementation}
+To feed these displaysdata pipeline is needed. The generated JSON-report file can be used to fulfill this job by feeding the flight SHM data to the Timeline, Level 1 and Level 2. For Level 3 the parameter SHM-metadata is needed as shown in figure \ref{fig:stashboard_flow}.
+
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{stashboard_flow}
+    \caption{Data Pipeline for STASHBOARD elements to display SHM reports}
+    \label{fig:stashboard_flow}
+\end{figure}
+
+The flow of the stashboard allows selection of any stash flight by using the skystash API through dropdown menus. The Stashboard can then access the flight's metadata and represent it by using the previously developed data displays.
+%\begin{figure}
+ %   \centering
+  %  \includegraphics[width=\textwidth]{stashboard_flight_selection}
+   % \caption{Selecting any flight using dropdown menus}
+   % \label{fig:stashboard_selection}
+%\end{figure}
+This results in a flexible, scalable analytics application for skystash data and SHM reports that gives a quick overview over the vast amounts of data and be used by flight test engineers to get an overview over data quality as well as developers to optimize algorithms. The first prototype of the developed application is shown in figure \ref{fig:stashboard}.
+
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=\textwidth]{stashboard_screenshot_1}
+    \caption{Stashboard webbased analytic Tool }
+    \label{fig:stashboard}
+\end{figure}
+
+
+\newpage
 \section{Summary}
 
 This parameter showed the methods used and the considerations made for the implementation of this SHM. Various methods and approaches were implemented to check for sensor faults. Next to the straight implementation, focus was put into developing solid interfaces to ease further implementation of future methods of fault detection. This applies for Levels 1, 2 as well as 3 which in this work was only minimally implemented to allow this prototype to see the light of day.
