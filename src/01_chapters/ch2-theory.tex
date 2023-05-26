@@ -188,7 +188,7 @@ Further definitions are also employed by the \textcite{faa_federal_radionavigati
     \label{fig:dart_boards}
 \end{figure}
 
-Following the GNSS domain, the terms accuracy and precision are important measures for quantifying results. For representation, a dart board is illustrated in figure \ref{fig:dart_boards}. It is then important to distinguish that good accuracy is the result of good precision as well as a good trueness. A mathematical description for the precision could be the standard deviation and the deviation of mean and actual value as the trueness. \cite{iso_iso5725-1_accuracy_1997}\cite[S.33ff.]{smith_scientist_nodate}
+Following the GNSS domain, the terms accuracy and precision are important measures for quantifying results. For representation, a dart board is illustrated in figure \ref{fig:dart_boards}. It is then important to distinguish that good accuracy is the result of good precision as well as a good trueness. A mathematical description for the precision could be the standard deviation and the deviation of mean and actual value as the trueness. \cite{iso_iso5725-1_accuracy_1997}\cite[S.33ff.]{smith_scientist_1999}
 
 
 %\subsection{Integrity, Reliability and Validity based on GNSS or NORMS von Lars}
@@ -216,7 +216,7 @@ In the following, state of the art non machine-learning approaches are introduce
 
 
 
-\cite{smith_scientist_nodate}
+\cite{smith_scientist_1999}
 \begin{figure}[h]
     \centering
     \includegraphics[width=.7\textwidth]{python_functions/images/statistic_functions_clean}
@@ -250,7 +250,7 @@ Sensors generally produce errors within expected forms of output. -Noise -Measur
 
 Statistical representation of: Mean
 
-\cite[S.13-17]{smith_scientist_nodate}
+\cite[S.13-17]{smith_scientist_1999}
 
 Time continuous mean
 \begin{equation}
@@ -329,7 +329,7 @@ It follows then that the autocovariance for a variable is
 $$autocov(x) = cov(x,x)$$
 
 
-The Pearson coefficient as the correlation matrix is hence reached by scaling the covariance matrix by the standard deviation: \cite{smith_scientist_nodate}
+The Pearson coefficient as the correlation matrix is hence reached by scaling the covariance matrix by the standard deviation: \cite{smith_scientist_1999}
 
 $$\rho_{x,y} = corr(x,y)=\frac{cov(x,y)}{\sigma_x \sigma_y}$$
 
@@ -441,7 +441,7 @@ The principal component analysis is based on correlation principles and allows r
 \subsubsection{PTF}
 
 
-Following the recipe for a modeled aircraft based on sensor data we try to simulate the parameters x and u of the aircraft with the sensor data y. Khaled shows that this approach works for linking the angular velocities for the aircraft axes $omega_x$, $omega_y$, $delta_delta(drift angle)$ with $omega_z$. This is accomplished by tuning the Transmissibility function $\mathcal{T}$ using dynamically generated Markov-parameters. Essentially generating a type of correlation matrix for the parameters that gets tuned within the beginning of the measuring period that is then able to generate a residual, detecting errors. This approach is explained more closely in the most recent publication, examining the unknown dynamic systems of a roomba platoon. \cite{khalil_transmissibility-based_2022, khalil_transmissibility-based_2022-1}
+Following the recipe for a modeled aircraft based on sensor data we try to simulate the parameters x and u of the aircraft with the sensor data y. Khaled shows that this approach works for linking the angular velocities for the aircraft axes $omega_x$, $omega_y$, $delta_delta(drift angle)$ with $omega_z$. This is accomplished by tuning the Transmissibility function $\mathcal{T}$ using dynamically generated Markov-parameters. Essentially generating a type of correlation matrix for the parameters that gets tuned within the beginning of the measuring period that is then able to generate a residual, detecting errors. This approach is explained more closely in the most recent publication, examining the unknown dynamic systems of a roomba platoon. \cite{khalil_transmissibility-based_2022, khalil_transmissibility-based_2022-1, wolter_anwendung_2014}
 
 \paragraph{Functionality}
 
