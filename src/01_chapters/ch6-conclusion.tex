@@ -1,29 +1,17 @@
 \chapter{Conclusion}
+Development of an application to detect faults in Flight Test Data using conventional, non-ML methods has been executed in this work. Firstly, the problem was segmented into three distinct sub-domains. The checking of availability of sensor data is the first step. Checking against the test configuration and detecting whether sensors are not available. The next step consisted of checking single timeseries with algorithms that do not include other sensor data.  Thirdly, sensor data should be checked against each other to take into account redundant sensor data as well as physically correlating sensors. After introducing the general algorithms to detect faults, some attention was given to the software development side and the overall architecture to develop a design that fits into the Digital Twin project and interfaces cleanly with the skystash while also honoring FAIR guiding princples. In this part about configuration files and metadata management, a method was developed to separate the actually generated DAQ-data from additional, general metadata. This method would then allow to allocate various types of metadata as well as SHM-configuration into a single, standardized JSON format. This standardized shape of metadata could then also be used to configure the data processing step, making the kind of checks and algorithms retraceable. This would essentially decouple the single steps of the entire process into four steps:
 
+\begin{enumerate}
+        \item Upload of raw data and metadata
+        \item Metadata Merge
+        \item Data Processing and Fault Detection
+        \item Fault Mode Analysis
+\end{enumerate}
 
-\section{Discussion/Potential}
+Using these four steps and having put an emphasis on the general architecture of SHM this work still achieves to catch many previously unknown faults and occurences of interest by still employing relatively simple algorithms.
 
--lvl2:Of course, this topic could be examined within a depth that may exceed this work such as estimating white noise using discrete fourier Transform Subspace Decompositions \cite{hendriks_noise_2008} or statistical methods such as covariance operators.
+This approach and general implementation of novel architecture '' cracks open a piñata filled with opportunity ''.\cite{zacharias_what_2023} Enabling algorithms for FMEA to be quickly deployed and evaluated in contrast to previous work-processes in which data accessibility has been a huge issue. At this point, the barrier of entry for other researchers is lowered far down. Facilitating implementation of novel FMEA algorithm and testing it on this new testbed to generate data quality indices while also being able to have access to test cases and other algorithms to compare and validate to. Since especially research data is highly customized this can be a possible way to deal with complex transformation functions as well as complex sensor/parameter correlations and gather overviews quicker. Particularly the rapidly growing field of IoT may benefit from such an application that allows integration into a data space such as the skystash to automatically evaluate sensors, infrastructures and FMEAs. Quickly generating value without having to implement infrastructure.
 
-The goal of this work however, is preservation of scalability, minimal user and configuration inputs.
-
-Implementation list:tryouts
--lvl3 rigid body simulation for flight dynamics
--lvl3 implementation of multiple COS and their respective conversions
--lvl3 residual interpretation (better than highpass filtering and checking for std)
-
--Real time implementation
--Pseudo transfer functions (Generate a real time correlation matrix (MArkov parameters) and generate residuals based on that)
--PCA
--better parameter fusion algorithms (voting, or others see GNSS-RAIM)
-        -aaim,
-        -external factors integrity monitoring
-- GANomaly approach (neural network) since an aircraft dataset is similar to images in that it is a multidimensional dataset
-
--more and better evaluation of the report display to satisfy innovation turbine requirements.
-
-
-builds foundation for iot platforms that automatically can evaluate sensors, infrastructures and FMEAs. Since especially research data is highly customized this can be a possible way to deal with complex transformation functions as well as complex sensor/parameter interrelations.
 
 	%\section{Stacked V-Model}
 %This work per se can be modeled within a stacked v-diagram like in figure (stacked-v).

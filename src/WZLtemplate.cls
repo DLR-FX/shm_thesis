@@ -171,7 +171,8 @@ citecolor=black
 	%			nohyperlinks,
 	nolist
 	]{acronym}
-
+\RequirePackage{nomencl}
+\makenomenclature
 \RequirePackage{emoji}
 %% Required for including any kind of graphical images
 \RequirePackage{graphicx}

@@ -13,7 +13,7 @@ Therefore
 \section{Introduction}
 
 
-The implementation can be detailed by figure \ref{fig:fti_microservices}. After having uploaded the Dataset the relevant information on the sensors as well as the aircraft properties is gathered and condensed into a single configuration metadata-set represented by a JSON file. This JSON file is then appended to the Dataset within the skystash architecture represented by the Online side that is accessed by the API. Processing the data now becomes a clean blackbox operation that is only fed by data received by the API returning its report containing notable occurences via the API and storing all relevant information online. Since this software is developed for flight operations and an interactive visualization of the report data facilitates evaluation of the generated report data a User Interface within a dashboard application is developed. Additional benefits contrary to the generation of PDF reports are dynamic updates as well as interactivity and an agile update cycle considering the spontaneous emergence of bugs.
+The implementation can be detailed by figure \ref{fig:fti_microservices}. After having uploaded the Dataset the relevant information on the sensors as well as the aircraft properties is gathered and condensed into a single configuration metadata-set represented by a JSON file. This JSON file is then appended to the Dataset within the skystash architecture represented by the Online side that is accessed by the API. Processing the data now becomes a clean blackbox operation that is only fed by data received by the API returning its report containing notable occurrences via the API and storing all relevant information online. Since this software is developed for flight operations and an interactive visualization of the report data facilitates evaluation of the generated report data a User Interface within a dashboard application is developed. Additional benefits contrary to the generation of PDF reports are dynamic updates as well as interactivity and an agile update cycle considering the spontaneous emergence of bugs.
 
 
 \begin{figure}[h]
@@ -27,7 +27,7 @@ The implementation can be detailed by figure \ref{fig:fti_microservices}. After 
 \section{Data Parsing}
 %Since the SHM has to run on something, the original data is briefly mentioned for completeness.
 
-Since the data the SHM will work on orginates from the airplane and needs to uploaded without any modification to preserve originality this small section will deal with the handling of data from the aircraft until it reaches its destination in the skystash.
+Since the data the SHM will work on originates from the airplane and needs to uploaded without any modification to preserve originality this small section will deal with the handling of data from the aircraft until it reaches its destination in the skystash.
 
 The Data is uploaded to the stash from the aircraft DAQ format. Its data is available in the proprietary IMC .raw formats. These are then parsed into the stash by converting them into timeseries for each parameter. The data structure used in the skystash is represented in figure \ref{fig:skystash_folder_structure}. The folder structure's main path is the project folder which represents the project in which the flight was performed in and contains all the project's flights. Each flight then contains parameter measurements which represent the lowest level of objects in the architecture. All objects of project, flight or measurement type can also contain JSON-usertags as well as additional data in binary format such as pdf files.
 
@@ -73,7 +73,7 @@ The configuration from the previous step has now been uploaded to the skystash. 
 %-incomplete metadata
 %-Metadata is not complete yet. -does only contain info from DAQ which represents only the info the DAQ needs. What about all the other information that is not in the DAQ?
 
-The DAQ configuration in itself is very essential but also incomplete in that is does not yet contain necessary information for detecting errors within our data. To achieve this we need to enhance our metadata from the DAQ with additional data. This permanent, generally unchanging metadata is first specified locally and contains values such as boundaries for level 2 or tags for level 3 to correlate parameters to each other. It is also specified for each parameter individually. It is then also possible to assign values such as frequency locally.
+The DAQ configuration in itself is very essential but also incomplete in that is does not yet contain necessary information for detecting errors within our data. To achieve this, we need to enhance our metadata from the DAQ with additional data. This permanent, generally unchanging metadata is first specified locally and contains values such as boundaries for level 2 or tags for level 3 to correlate parameters to each other. It is also specified for each parameter individually. It is then also possible to assign values such as frequency locally.
 
 
 %§ SHM-info not available in DAQ-metadata, e.g. positional of sensors not available -shm info necessary
@@ -143,16 +143,16 @@ After compiling various inputs into a single metadata structure a common format 
 
 
 \section{Data Processing}
-Now, we can sort out the vital step of this work. Taking the inputs of data and metadata with the configuration needed and implementing sensible logic to reliably detect anomalies in the data. This will first be preceeded by some considerations about software architecture and then delving into the specific methods for FMEA.
+Now, we can sort out the vital step of this work. Taking the inputs of data and metadata with the configuration needed and implementing sensible logic to reliably detect anomalies in the data. This will first be preceded by some considerations about software architecture and then delving into the specific methods for FMEA.
 
 \subsection{Software architecture considerations}
 %todo: check mention of :				□ Modularity	□ Modifiability □ Reusability □ Quick Feedback
 
 
-Careful consideration needs to be given to the workflow of the level 1 check to allow scalability and reduce manual interaction. To achieve this architecture manual steps are reduced as far as possible. However, some level of configuration must be implemented otherwise only relational sensor behaviour could be detected. Meaning that sensor faults occuring temporarily within an experiment can be detected but permanent behavior is not noticed by a relative algorithm e.g. only detecting strong aberration. To satisfy this desire for information the preceeding metadata configuration step in chapter \ref{chap:2-metadata-format} is implemented.
+Careful consideration needs to be given to the workflow of the level 1 check to allow scalability and reduce manual interaction. To achieve this architecture manual steps are reduced as far as possible. However, some level of configuration must be implemented otherwise only relational sensor behavior could be detected. Meaning that sensor faults occurring temporarily within an experiment can be detected but permanent behavior is not noticed by a relative algorithm e.g. only detecting strong aberration. To satisfy this desire for information the preceding metadata configuration step in chapter \ref{chap:2-metadata-format} is implemented.
 
 \subsection{Check 1 Implementation}
-For implementing the level 1 checks, the measured data needs to be compared to the expected data. To gain insight into what the the expected data is, the configuration file of the data acquisitioning system needs to get parsed as presented in chapter \ref{chap:2-metadata-format}.
+For implementing the level 1 checks, the measured data needs to be compared to the expected data. To gain insight into what the expected data is, the configuration file of the data acquisitioning system needs to get parsed as presented in chapter \ref{chap:2-metadata-format}.
 
 It is possible to export the DAQ flight-specific configuration within the software \textit{IMC Studio}. This reads .imcexp files and then allows export into a .xml format. Downsides are though that various manual steps are involved in this process and it is thus prone to errors. So, we naturally attempt to automate it.
 
@@ -229,7 +229,7 @@ Generally, predefined limits are checked within SHM Level 2. For the first step,
 
 \subsubsection{Movement check}
 \label{chap:4-level_2_movement}
-The next category examining the sensor behaviour can be classified into sensor movement being too low or sensor movement being too high. Movement being defined within this context as the difference of a new sensor value to the previous one.
+The next category examining the sensor behavior can be classified into sensor movement being too low or sensor movement being too high. Movement being defined within this context as the difference of a new sensor value to the previous one.
 
 Hence, an approach using a STFT is chosen in which the amplitude is averaged across all frequencies from its spectrum. This guarantees a generalized feature extraction, resulting in standardization for parameters. Based on this spectral analysis, the logarithmic order of the variable can be estimated within its dataset. Previously, the frequency is assumed via time difference of start and end time divided by $n_{datapoints}$. The STFT also implements preprocessing steps that would otherwise be necessary such as translating the signal by its average value as well as scaling it by its standard deviation. Would one be interested in examining a signal using functions from a statistical toolbox, a similar result may be achieved by performing the previous steps of averaging and scaling the signal and then examining the variance within a moving window of the signal, similar to the STFT. The size of the moving window for such an analysis is defaulted to 256 data points for each signal. Certain issues with methods of moving windows are however, that they are not very meaningful for the beginning and ending of datasets within which the window is not fully occupied. This may lead to spikes for the STFT, which is why it is found that the STFT is generally more powerful to examine insufficient sensor movement.
 
@@ -256,7 +256,7 @@ First, a common reference state will be defined for checks, then the Parity func
 \paragraph{Finding a reference state}
 
 %And
-As discussed many parameters are available that allow backtracing onto a single state variable of the aircraft. They are also available in various COS.
+As discussed, many parameters are available that allow backtracking onto a single state variable of the aircraft. They are also available in various COS.
 
 %But
 Aircraft position and state can be interpreted in various Coordinate Systems. It is also necessary to compare redundant parameters within these varied reference systems. Hence, the reduction of the various reference systems onto a single reference system is necessary to guarantee comparability.
@@ -270,7 +270,7 @@ Since the geodetic reference system is best described by the GNSS and Inertial M
 %Latitude and Longitude form the x and y axis of the COS. True heading forms the reference heading within the geodetic system.
 %All aircraft parameters related to motion and position of the aircraft should be attempted to be condensed into this form.
 
-%The integration step may be omitted in early design stages since the necessary equations and equilibriums of Forces and Moments could only be modelled linearly while neglecting various unknown factors like shifting CG due to fuel burn, actual Inertia of Aircraft and aicraft mass. Hence, this step may be implemented if time allows it.
+%The integration step may be omitted in early design stages since the necessary equations and equilibriums of Forces and Moments could only be modelled linearly while neglecting various unknown factors like shifting CG due to fuel burn, actual Inertia of Aircraft and aircraft mass. Hence, this step may be implemented if time allows it.
 
 \paragraph{Dynamic configuration and correlation of parameters}
 
@@ -312,13 +312,13 @@ Using this configuration method, the Parity model can then be calculated using g
 
 %In figure \ref{fig:level_3_config, fig:level_3_config_uml} the general structure of the dynamic configuration in JSON format is shown. The configuration parent is a component containing subcomponents that themselves may contain subcomponents.
 
-This system takes inspiration and inherits the configuration structure from the SensOr Interfacing Language (SOIL)\cite{behrens_domain-specific_2021}. In this work's use-case the \textit{Element} ISTAR research aircraft contains top-level components that are the independent state variables of the aircraft. An example that will be invested further in following sections is that of the \textit{static pressure}. The workflow begins by defining the Tag \textit{static pressure} in the permanent configuration and then configuring it into the Level 3-configuration structure. This tree structure is then parsed and calculates a value for each level of detail taking into account its lower lying neighbours. Some weighting also has to be considered since a number of redundant pressure sensor could skew results against a single GNSS parameter. Thus a condensed parameter is calculated for each degree of freedom that is based on predefined algorithms and tags that can be freely defined within the config file that are then recursively parsed within the tree structure.
+This system takes inspiration and inherits the configuration structure from the SensOr Interfacing Language (SOIL)\cite{behrens_domain-specific_2021}. In this work's use-case the \textit{Element} ISTAR research aircraft contains top-level components that are the independent state variables of the aircraft. An example that will be invested further in following sections is that of the \textit{static pressure}. The workflow begins by defining the Tag \textit{static pressure} in the permanent configuration and then configuring it into the Level 3-configuration structure. This tree structure is then parsed and calculates a value for each level of detail taking into account its lower lying neighbors. Some weighting also has to be considered since a number of redundant pressure sensor could skew results against a single GNSS parameter. Thus, a condensed parameter is calculated for each degree of freedom that is based on predefined algorithms and tags that can be freely defined within the config file that are then recursively parsed within the tree structure.
 %avoid weighting by structuring checks into a tree format for independent aircraft state variables.
 
 \paragraph{Limit Generation}
 Now the fused state value as well as the single, transformed sensor values are present. The next step consists of defining a limit for the resulting residual from combining the fused state with the single sensor value. Naturally, this could be defined manually by e.g. defining a limit of 0.5 meters for an altitude value. Since however automation is sought after, an automatic limit generation is determined as a requirement for dealing with these large data sets.
 
-Statistical methods then are examined for automatically generating thresholds for the parameter values. A method is then implemented to detrend the signal and take the resulting noise as the allowed deviation. In practice this results in a rudimentary Highpass-filter that gets realized by using a moving window function combined with an averaging function with a window width of $n=256$. After using this crude High-Pass Filter to extract noise from the dataset we can acquire the standard deviation of this noisy signal and use it to set the limit for resulting residual evaluation.
+Statistical methods then are examined for automatically generating thresholds for the parameter values. A method is then implemented to detrend the signal and take the resulting noise as the allowed deviation. In practice this results in a rudimentary high-pass filter (HPF) that gets realized by using a moving window function combined with an averaging function with a window width of $n=256$. After using this crude HPF to extract noise from the dataset we can acquire the standard deviation of this noisy signal and use it to set the limit for resulting residual evaluation.
 
 %TODO: plot here to visualize action
 
@@ -336,7 +336,7 @@ Using this generic approach primarily guarantees quick and easy operations. It r
 
 \section{Report Visualization}
 
-At this point, the data has been checked and a report within a JSON-format has been generated and appended to the skystash flight. The missing parameters have been found, sensor values have been checked by themselves and additionally physical correlations and redundant sensors have been checked. However, FMEA algorithms generally need some tuning to become their most effective and analysing the JSON data takes some time to grasp all peculiarities of the data. Facilitating and Accelerating development, the STASHBOARD is introduced. It is an interactive data report that is developed for data analytics. And instead of a pdf type report it works more efficiently and rather follows the paradigm of a single source of truth. It allows for dynamic updates and thus does not represent a data source in itself but rather view on the source facilitating updates on the data. It allows to quickly gain an overview over the state of sensors and closes the feedback loop in the development cycle.
+At this point, the data has been checked and a report within a JSON-format has been generated and appended to the skystash flight. The missing parameters have been found, sensor values have been checked by themselves and additionally physical correlations and redundant sensors have been checked. However, FMEA algorithms generally need some tuning to become their most effective and analyzing the JSON data takes some time to grasp all peculiarities of the data. Facilitating and Accelerating development, the STASHBOARD is introduced. It is an interactive data report that is developed for data analytics. And instead of a pdf type report it works more efficiently and rather follows the paradigm of a single source of truth. It allows for dynamic updates and thus does not represent a data source in itself but rather view on the source facilitating updates on the data. It allows to quickly gain an overview over the state of sensors and closes the feedback loop in the development cycle.
 
 \subsection{Visualization}
 \label{chap:4-visualization}
@@ -411,20 +411,20 @@ The Sensor Interaction and correlation is calculated for each sensor. To then gr
     \label{fig:stashboard_level3}
 \end{figure}
 
-Then, the fused state value associated with its upper and lower limits is displayed in the following window. Overlayed, the amount of detected sensor errors is shown, similar to figure \ref{fig:stashboard_level2_clean}. Finally, the average of the residual for each parameter is shown to quantify any occuring bias in the right window.
+Then, the fused state value associated with its upper and lower limits is displayed in the following window. Overlaid, the amount of detected sensor errors is shown, similar to figure \ref{fig:stashboard_level2_clean}. Finally, the average of the residual for each parameter is shown to quantify any occurring bias in the right window.
 
 
 \paragraph{Implementation}
-To feed these displaysdata pipeline is needed. The generated JSON-report file can be used to fulfill this job by feeding the flight SHM data to the Timeline, Level 1 and Level 2. For Level 3 the parameter SHM-metadata is needed as shown in figure \ref{fig:stashboard_flow}.
+To feed these displays a data pipeline is needed. The generated JSON-report file can be used to fulfill this job by feeding the flight SHM data to the Timeline, Level 1 and Level 2. For Level 3 the parameter SHM-metadata is needed as shown in figure \ref{fig:stashboard_flow}.
 
 \begin{figure}[!h]
     \centering
     \includegraphics[width=0.8\textwidth]{stashboard_flow}
-    \caption{Data Pipeline for STASHBOARD elements to display SHM reports}
+    \caption{Data Pipeline for Stashboard elements to display SHM reports}
     \label{fig:stashboard_flow}
 \end{figure}
 
-The flow of the stashboard allows selection of any stash flight by using the skystash API through dropdown menus. The Stashboard can then access the flight's metadata and represent it by using the previously developed data displays.
+The flow of the Stashboard allows selection of any stash flight by using the skystash API through dropdown menus. The Stashboard can then access the flight's metadata and represent it by using the previously developed data displays.
 %\begin{figure}
  %   \centering
   %  \includegraphics[width=\textwidth]{stashboard_flight_selection}
