@@ -64,7 +64,6 @@
 \RequirePackage[greek,\longlang]{babel}
 
 
-%TODO pass options to class
 
 %\DeclareOption{en}{\PassOptionsToPackage{english}{babel}}
 %\ProcessOptions\relax
@@ -163,7 +162,6 @@ citecolor=black
 
 
 %% Add acronyms
-%TODO comment nolist
 \RequirePackage[
 	printonlyused,
 	%			withpage,
@@ -209,7 +207,6 @@ citecolor=black
 	justification=raggedright,
 	singlelinecheck=false
 }
-%TODO \captionsetup[table]{labelfont=bf}
 
 
 %% Set custom colours
@@ -227,7 +224,6 @@ citecolor=black
 \definecolor{aliceblue}{HTML}{F0F8FF}
 
 
-%% Use \todo{} for inline-todo notes
 \RequirePackage[color=aliceblue]{todonotes}
 \RequirePackage{regexpatch}
 \makeatletter
@@ -241,10 +237,14 @@ citecolor=black
 
 %% Style for tableofcontents
 \setlength{\cftbeforesecskip}{5pt}
-
+\newcommand{\pie}[1]{%
+\begin{tikzpicture}
+ \draw (0,0) circle (1ex);\fill (1ex,0) arc (0:#1:1ex) -- (0,0) -- cycle;
+\end{tikzpicture}%
+}
 %% Subliminal refinements towards typographical perfection 
 \RequirePackage{microtype}
-
+\RequirePackage{wasysym}
 %% bibliography for defining macros in .tex-documents
 %% processing backend: biber
 %% further explanations: https://tex.stackexchange.com/a/299286

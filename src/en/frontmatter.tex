@@ -1,46 +1,57 @@
-\usepackage{import}% !TeX root = main.tex
+%\usepackage{import}% !TeX root = main.tex
 
 \toc % Table of contents
+
+%todo: fix. and fix baro
+
 
 \chapter{Acronyms}
 \newcommand{\rowheight}{3ex}
 \begin{table}[ht!]
-	\begin{tabularx}{\dimexpr\textwidth}{p{3cm} p{3cm} X}
-		\textbf{Symbol} & \textbf{Unit} & \textbf{Description}   \\ \midrule
-		$a_e$                  & mm               & Width \\[\rowheight]
-		a\_p                   & mm               & Cutting depth \\[\rowheight]
-		t            		   &                  & Number of teeth [Note: Sorting is alphabetical] \\[\rowheight]
-		$\alpha$               &                  & angle \\[\rowheight]
-		 p      & pressure at current altitude [Pa]                                \\[\rowheight]
-    p_{0}  & reference pressure [Pa]                                          \\[\rowheight]
-    h      & current altitude   [m]                                              \\[\rowheight]
-    h_{0}  & reference altitude [m]                                           \\[\rowheight]
-    T(h_0) & temperature at reference altitude [K]                             \\[\rowheight]
-    a      & ISA Temperature gradient [K/km] \\[\rowheight]
-    g      & gravity constant $(9.80665) [m/s^2]$                             \\[\rowheight]
-    R      & Ideal Gas Constant  $(287.05287)[m^2/( K\cdot s^2)]$
-
-	\end{tabularx}
+    \begin{tabularx}{\dimexpr\textwidth}{p{3cm} p{3cm} X}
+        \textbf{Symbol} & \textbf{Unit}        & \textbf{Description}              \\ \midrule
+        p               & Pa                   & Pressure at current altitude                             \\[\rowheight]
+        $p_{0}$         & Pa                   & Reference pressure                                        \\[\rowheight]
+        $h$             & m                    & Current altitude                                             \\[\rowheight]
+        $h_{0}$         & m                    & Reference altitude                                          \\[\rowheight]
+        $T(h_0)$        & K                    & Temperature at reference altitude                       \\[\rowheight]
+        a               & K/km                 & ISA Temperature gradient  \\[\rowheight]
+        g               & $m/s^2$              & Gravity constant $(9.80665)$                             \\[\rowheight]
+        R               & $m^2/( K \cdot s^2)$ & Ideal Gas Constant  $(287.05287)$\\[\rowheight]
+        $\sigma$        &                      & Standard Deviation \\[\rowheight]
+        $\sigma^2$      &                      & Variance\\[\rowheight]
+        $\mu$           &                      & Statistical Mean\\[\rowheight]
+        u               &                      & Process Input\\[\rowheight]
+        y               &                      & Process Measurement\\[\rowheight]
+        x               &                      & Process State\\[\rowheight]
+        $\rho$          &                      & Pearson Coefficient\\[\rowheight]
+        PMF             &                      & Probability Mass Function \\[\rowheight]
+        SNR             &                      & Signal-to-Noise Ratio\\[\rowheight]
+        CV              &                      & Coefficient of Variation\\[\rowheight]
+    \end{tabularx}
+    \label{tab:acro1}
 \end{table}
 
 \begin{table}[ht!]
-	\begin{tabularx}{\dimexpr\textwidth}{p{6cm}p{0cm} X}
-		\textbf{Abbreviation} && \textbf{Description}   \\ \midrule
-		ADC && Analog Digital Converter\\[\rowheight]
-		FX	&&	Flight Experiments	\\[\rowheight]
-FTI	&&	Flight Test Instrumentation	\\[\rowheight]
-DLR	&&	Deutsches Zentrum für Luft- und Raumfahrt	\\[\rowheight]
-RWTH	&&	Rheinisch-Westfälische Technische Hochschule	\\[\rowheight]
-JSP	&&	job-shop scheduling problem	\\[\rowheight]
-FJSP	&&	flexible job-shop scheduling problem	\\[\rowheight]
-SHM	&&	Sensor Health Monitoring	\\[\rowheight]
-FMEA	&&	Failure Mode and Effects Analysis	\\[\rowheight]
-GNSS	&&	Global Navigation Satellite System	\\[\rowheight]
-IoT	&&	Internet of Things	\\[\rowheight]
-SOIL	&&	SensOr Interfacing Language	\\[\rowheight]
-ML	&&	Machine Learning	\\[\rowheight]
+    \begin{tabularx}{\dimexpr\textwidth}{p{6cm}p{0cm} X}
+        \textbf{Abbreviation} & & \textbf{Description}                            \\ \midrule
+        ADC                   & & Analog Digital Converter\\[\rowheight]
+        FX                    & & Flight Experiments    \\[\rowheight]
+        FTI                   & & Flight Test Instrumentation    \\[\rowheight]
+        DLR                   & & Deutsches Zentrum für Luft- und Raumfahrt    \\[\rowheight]
+        RWTH                  & & Rheinisch-Westfälische Technische Hochschule    \\[\rowheight]
+        SHM                   & & Sensor Health Monitoring    \\[\rowheight]
+        FMEA                  & & Failure Mode and Effects Analysis    \\[\rowheight]
+        GNSS                  & & Global Navigation Satellite System    \\[\rowheight]
+        IoT                   & & Internet of Things    \\[\rowheight]
+        IoP                   & & Internet of Production    \\[\rowheight]
+        SOIL                  & & SensOr Interfacing Language    \\[\rowheight]
+        ML                    & & Machine Learning    \\[\rowheight]
+        DAQ                   & & Data Acquisitioning System \\[\rowheight]
+        ASCB-D                & & Avionics Standard Communications Bus, Version D \\[\rowheight]
+        FAA                   & & Federal Aviation Administration \\[\rowheight]
 
-	\end{tabularx}
+    \end{tabularx}
 \end{table}
 
 \loflot % List of figures & tables
