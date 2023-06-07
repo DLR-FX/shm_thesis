@@ -8,15 +8,14 @@
 The implementation efforts of this thesis are condensed into the following chapter. A holistic perspective on the data process is described in the following step motivated by the urgency that Sensor Health Monitoring needs to be perceived within its ecosystem. A SHM thus is directly reliant upon the data in the first place. It is then also reliant upon the configuration metadata since it will contain necessary information for processing the data further within the SHM. To then close the feedback loop it is also vital to generate a sensible data display that allows quick evaluation of the SHM since manual evaluation methods would slow the development process by orders of magnitude. Manual methods would not only cause slow-down but would also be more prone to errors than automated processes.\cite{barchard_preventing_2011}
 
 \section{Introduction}
-%TODO: level 1,2,3 here
 
-The implementation can be detailed by figure \ref{fig:fti_microservices}. After having uploaded the Dataset the relevant information on the sensors as well as the aircraft properties is gathered and condensed into a single configuration metadata-set represented by a JSON file. This JSON file is then appended to the Dataset within the skystash architecture represented by the Online side that is accessed by the API. Processing the data now becomes a pure blackbox operation that is only fed by data received by the API returning its report containing notable occurrences via the API and storing all relevant information online. Since this software is developed for flight operations and an interactive visualization of the report data facilitates evaluation of the generated report data a User Interface within a dashboard application is developed. Additional benefits contrary to the generation of PDF reports are dynamic updates as well as interactivity and an agile update cycle considering the spontaneous emergence of bugs.
+The implementation can be detailed by Figure \ref{fig:fti_microservices}. After having uploaded the Dataset the relevant information on the sensors as well as the aircraft properties is gathered and condensed into a single configuration metadata-set represented by a JSON file. This JSON file is then appended to the Dataset within the skystash architecture represented by the Online side that is accessed by the API. Processing the data now becomes a pure blackbox operation that is only fed by data received by the API returning its report containing notable occurrences via the API and storing all relevant information online. Since this software is developed for flight operations and an interactive visualization of the report data facilitates evaluation of the generated report data a User Interface within a dashboard application is developed. Additional benefits contrary to the generation of PDF reports are dynamic updates as well as interactivity and an agile update cycle considering the spontaneous emergence of bugs.
 
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=.8\textwidth]{FT_microservices_AWS}
-    \caption{The data toolchain prospectively used for Sensor Health Monitoring}
+    \caption[SHM representation as microservices]{The data toolchain prospectively used for Sensor Health Monitoring results from transforming the flow from Figure \ref{fig:SHM_simplified} into single encapsuled functions that work by interacting with the skystash. While the \textit{Dataset} and \textit{Visualization} step work by just writing or viewing the data the \textit{Configuration} and \textit{Processing} read the existing data and append new data.}
     \label{fig:fti_microservices}
 \end{figure}
 
@@ -60,7 +59,7 @@ Once a merged data construct (as shown in Fig. \ref{fig:skystash_metadata_pipeli
 \begin{figure}
     \centering
     \includegraphics[width=0.7\textwidth]{skystash_metadata_pipeline}
-    \caption{Metadata Pipeline}
+    \caption[The SHM Metadata Pipeline]{The \textit{Configuration} metadata Pipeline as introduced in Figures \ref{fig:SHM_simplified} and \ref{fig:fti_microservices}. Metadata from the DAQ gets read from the skystash via the API and additional local metadata and configuration gets appended containing e.g DLR Internal data as shown in Figure \ref{fig:digecat_data_sources}. The merging happens by prioritizing the DAQ metadata since it is assumed to contain the truest descriptors of data (see merging in Figure \ref{fig:skystash_metadata_merging}). }
     \label{fig:skystash_metadata_pipeline}
 \end{figure}
 
@@ -72,14 +71,14 @@ Required data then needs to be defined locally. For this, an already existing da
 The metadata fusion is part of the feedback loop that is in-line with the data processing and feedback. This step is essential since it enables a quicker development since all steps displayed in the SHM-toolchain in Figure \ref{fig:fti_microservices} had to be performed previously if there had been any marginal changes. Compartmentalizing and modularizing these single steps allows to then accelerate development and testing by not having to parse data within each iteration.
 
 %-The configuration of the ISTAR is of great importance for the data processing. Also of great importance is the knowledge database which is currently in the shape of an excel document.
-Also, attributes that are generally transmitted within the DAQ configuration are sampling rates, data origins and other miscellaneous information related to the system. Not contained are information about general sensor description, position of sensors, overall setup of the aircraft sensor architecture and check limits for data values. To preserve the original DAQ infos as closely as possible the merging step as portrayed in figure \ref{fig:skystash_metadata_merging} is proposed in which conflicting values from DAQ and permanent config get overwritten by the DAQ. In this way, original DAQ info that is frequently changing such as the frequency gets preserved while still allowing additional data by the permanent local configuration to be used.
+Also, attributes that are generally transmitted within the DAQ configuration are sampling rates, data origins and other miscellaneous information related to the system. Not contained are information about general sensor description, position of sensors, overall setup of the aircraft sensor architecture and check limits for data values. To preserve the original DAQ infos as closely as possible the merging step as portrayed in Figure \ref{fig:skystash_metadata_merging} is proposed in which conflicting values from DAQ and permanent configuration get overwritten by the DAQ. In this way, original DAQ info that is frequently changing such as the frequency gets preserved while still allowing additional data by the permanent local configuration to be used.
 
 %\\§ Fusioning of Metadata with Priorization of DAQ data
-The metadata enrichment process is described in Figure \ref{fig:skystash_metadata_pipeline} starting with data and metadata that is available in the skystash and unmodified. This unmodified data then gets enriched with metadata for parameters that are not already described by the DAQ config. In this step other SHM attributes get assigned such as checking limits for level 2 and variable tags for level 3 defining the meaning of a parameter. Since the metadata uploaded to the stash in itself is not very expressive and cryptic it needs to be refined further into a usable, concise format.
+The metadata enrichment process is described in Figure \ref{fig:skystash_metadata_pipeline} starting with data and metadata that is available in the skystash and unmodified. This unmodified data then gets enriched with metadata for parameters that are not already described by the DAQ configuration. In this step other SHM attributes get assigned such as checking limits for level 2 and variable tags for level 3 defining the meaning of a parameter. Since the metadata uploaded to the stash in itself is not very expressive and cryptic it needs to be refined further into a usable, concise format.
 \begin{figure}
     \centering
     \includegraphics{skystash_metadata_merging}
-    \caption{Priority Merging of Skystash data. Using the actual-DAQ configuration to overwrite other metadata.}
+    \caption[SHM Configuration Priority Merging]{Priority Merging of Skystash data for an arbitrary Parameter 1 as shown in Figure \ref{fig:skystash_metadata_pipeline}. Using the actual-DAQ configuration other configuration information for same metadata parameters such as \textit{sampling rate} gets overwritten since the DAQ is assumed to contain the truest and latest contents.}
     \label{fig:skystash_metadata_merging}
 \end{figure}
 
@@ -99,25 +98,25 @@ After compiling various inputs into a single metadata structure a common format 
 
 
 \section{Data Processing}
-Now, we can sort out the vital step of this work. Taking the inputs of data and metadata with the configuration needed and implementing sensible logic to reliably detect anomalies in the data. This will first be preceded by some considerations about software architecture and then delving into the specific methods for FMEA.
+Now starts the delve into the vital step of this work. Taking the inputs of data and metadata with the configuration needed and implementing sensible logic to reliably detect anomalies in the data. This will first be preceded by some considerations about software architecture and then delving into the specific methods for FMEA.
 
 \subsection{Software architecture considerations}
 %todo: check mention of :				□ Modularity	□ Modifiability □ Reusability □ Quick Feedback
 
 
-Careful consideration needs to be given to the workflow of the level 1 check to allow scalability and reduce manual interaction. To achieve this architecture manual steps are reduced as far as possible. However, some level of configuration must be implemented otherwise only relational sensor behavior could be detected. Meaning that sensor faults occurring temporarily within an experiment can be detected but permanent behavior is not noticed by a relative algorithm e.g. only detecting strong aberration. To satisfy this desire for information the preceding metadata configuration step in chapter \ref{chap:2-metadata-format} is implemented.
+Careful consideration needs to be given to the workflow of the level 1 check to allow scalability and reduce manual interaction. To achieve this architecture manual steps are reduced as far as possible. However, some level of configuration must be implemented otherwise only relational sensor behavior could be detected. Meaning that sensor faults occurring temporarily within an experiment can be detected but permanent behavior is not noticed by a relative algorithm e.g. only detecting strong aberration. To satisfy this desire for information the preceding metadata configuration step in chapter \ref{chap:2-metadata-format} is implemented. A special focus lies on the modularity, modifiability, reusability and the ability for a quick and smallest possible feedback loop to be assured within this work.
 
 \subsection{Check 1 Implementation}
 
 For implementing the level 1 checks, the measured data needs to be compared to the expected data. To gain insight into what the expected data is, the configuration file of the data acquisitioning system needs to get parsed as presented in chapter \ref{chap:2-metadata-format}. The ISTAR DAQ configuration file provides the expected values while the skystash provides the actual parameters that are available.
 
-This DAQ flight-specific configuration file can be exported within the software \textit{IMC Studio}. This reads .imcexp files and then allows export into a .xml format. Downsides are though that various manual steps are involved in this process and it is thus prone to errors. So, we naturally attempt to automate it. It turns out that the DAQ's imcexp format is in fact a .zip directory. The 7zip command line tool allows opening the configuration file since the configuration file's format is not fully complying to the zip standard making several python libraries fail during the process. This stems from an issue with the zip header and footer parts of the file that are not at expected places (effectively in the front and back). Once opened, the configuration file contains multiple files as well as an essential xml file that contains the needed sensor metadata. After some formatting these .imcexp can be read straight to generate similar info to the \textit{IMC Studio} workflow.
+This DAQ flight-specific configuration file can be exported within the software \textit{IMC Studio}. This reads \textit{.imcexp} files and then allows export into a .xml format. Downsides are though that various manual steps are involved in this process and it is thus prone to errors. So, instinctually and naturally an attempt for automating it is launched. It turns out that the DAQ's imcexp format is in fact a .zip directory. The 7zip command line tool allows opening the configuration file since the configuration file's format is not fully complying to the zip standard making several python libraries fail during the process. This stems from an issue with the zip header and footer parts of the file that are not at expected places (effectively in the front and back). Once opened, the configuration file contains multiple files as well as an essential xml file that contains the needed sensor metadata. After some formatting these \textit{.imcexp} can be read straight to generate similar info to the \textit{IMC Studio} workflow.
 
-The expected data then can be extracted from the .imcexp files and allows quick comparison against the actually generated data. This resolves the Level 1 implementation.
+The expected data then can be extracted from the \textit{.imcexp} files and allows quick comparison against the actually generated data. This resolves the Level 1 implementation.
 
 \subsection{Check 2 Implementation}
 
-Within Level 2, the sensor timeseries get checked without contextualization of other sensor data. This gets accomplished by principally checking them against predefined limits as shown in figure \ref{fig:level_2_flow}.
+Within Level 2, the sensor timeseries get checked without contextualization of other sensor data. This gets accomplished by principally checking them against predefined limits as shown in Figure \ref{fig:level_2_flow}.
 
 Use Cases for this are primarily the two implementations:
 
@@ -137,7 +136,7 @@ The general workflow consists of getting the timeseries of the signal from the s
 \begin{figure}
     \centering
     \includegraphics{level_2_flow}
-    \caption{Checking Logic for every type of level 2 function.}
+    \caption[SHM Level 2 flow charted]{The checking Logic valid for every type of level 2 function. Any timeseries, transformation function and desired limits serve as inputs. With the transformation function the data can be transformed in any desired way such as integrating, differentiating or modifying in any other way. After the transformation the data gets checked whether any data points are outside the limits and are appended to the report JSON if that is the case.}
     \label{fig:level_2_flow}
 \end{figure}
 
@@ -156,7 +155,7 @@ In the following, the three different types for Level 2 checking are introduced.
 
 %A check implementation counterchecking the sensors sampling that generates fault detections based on deviation from predefined sampling. This takes into account the DAQ configuration since it contains the current sampling rate. Minimizing false positives.
 
-Checking for nonexistent values is less straightforward than it seems within the skystash. Since empty values are filtered out a method is needed to check for start and end time as well as the time-distance between singular data points. To detect \textit{None} values we then are presented with two options:
+Checking for nonexistent values is less straightforward than it seems within the skystash. Since empty values are filtered out a method is needed to check for start and end time as well as the time-distance between singular data points. To detect \textit{None} values to options can be considered:
 \begin{enumerate}
     \item check parameter start and stop time
     \item check sampling rate
@@ -167,13 +166,13 @@ In the second step, the signal is checked upon crossing of boundaries. This mean
 % \usepackage{booktabs}
 \begin{table}[]
     \centering
+    \caption[Exemplary limits for checking parameters in Level 2]{Exemplary limits for checking parameters in Level 2 for the case without any transformation function.}
     \begin{tabular}{@{}lll@{}}
         \toprule
         Parameter           & Minimum & Maximum   \\ \midrule
         Barometric Altitude & -1000ft & 40,000ft  \\
         Static Pressure     & 1Pa     & 120,000Pa \\ \bottomrule
     \end{tabular}
-    \caption{Exemplary limits for checking parameters}
     \label{tab:level_2_range}
 \end{table}
 
@@ -228,24 +227,24 @@ Since the geodetic reference system is best described by the GNSS and Inertial M
 
 \paragraph{Dynamic configuration and correlation of parameters}
 
-The necessary configuration for the Parity Equations should then be expandable and dynamically adaptable. This means creating a dynamic structure that allows to represent the complex physical aircraft correlations. This includes creating hierarchical configuration information and an algorithm that reads this configuration and then downloads the sensors from the skystash to include them into the essential Level 3 flow represented in figure \ref{fig:level_3_flow}. The detected anomalies then get uploaded to the skystash.
+The necessary configuration for the Parity Equations should then be expandable and dynamically adaptable. This means creating a dynamic structure that allows to represent the complex physical aircraft correlations. This includes creating hierarchical configuration information and an algorithm that reads this configuration and then downloads the sensors from the skystash to include them into the essential Level 3 flow represented in Figure \ref{fig:level_3_flow}. The detected anomalies then get uploaded to the skystash.
 
 \begin{figure}
     \centering
     \includegraphics[width=0.8\textwidth]{level_3_flow}
-    \caption{Vector of $y$ is merged in a sensor fusion step to then generate a residual. Limits to evaluate the residual are then generated in the next step followed by the residual evaluation determining if the value is anomalous.}
+    \caption[Level 3 flowchart for residual evaluation]{In Level 3 a Vector of $y$ is merged in a sensor fusion step in order to generate a residual. Limits to evaluate the residual are generated in the next step followed by the residual evaluation determining if the value is anomalous.}
     \label{fig:level_3_flow}
 \end{figure}
 
-For the Level 3 configuration and information assignment a data structure similar to the SensOr Interfacing Language is proposed. An exemplary structure is shown in figure \ref{fig:level_3_config}.
+For the Level 3 configuration and information assignment a data structure similar to the SensOr Interfacing Language is proposed. An exemplary structure is shown in Figure \ref{fig:level_3_config}.
 \begin{figure}
     \centering
     \includegraphics[width=\textwidth]{level_3_config}
-    \caption{General structure of physical correlation setup}
+    \caption[Level 3 hierarchical Configuration Structure]{General structure of physical correlation setup for determining the exchangeable steps in Figure \ref{fig:level_3_flow} is defined by the UML diagram in Figure \ref{fig:level_3_config_uml}. A parent \textit{Element} contains multiple \textit{Components} that are the independent system variables. These \textit{Components} can then be either a \textit{Tag} that references a specific parameter or an entire new \textit{Component} that can then contain a \textit{Function} to perform transformation on its subcomponents to adhere to the current stage of the configuration hierarchy.}
     \label{fig:level_3_config}
 \end{figure}
 
-This dynamic description for parameter correlations is required in order to implement an efficient and quick way to assign parameter correlations. It is then assumed that a tree structure is fit for this task since parameters can be correlated to other upstream parameters by using a single flow direction. A more detailed view in a Universal Markup Language (UML) graph is shown in figure \ref{fig:level_3_config_uml}. The Class component generally forms the common element in the structure as seen in figure \ref{fig:level_3_config}. It is also notable that Tags as well as Elements inherit from the Components Class and are instances of it. Components possess the attributes of other \textit{components}, their own \textit{name}, the \textit{merged parameter} which represents a single fused value for all parameters below and an attribute containing all lower lying parameters called \textit{all parameters} which contains all parameters. It also contains two functions for firstly merging its components into the merged value and secondly transforming its parameters into a desired state dimension. E.g. converting Static Pressure into a barometric altitude. The current default of these functions consists of relatively rudimentary logic to not transform the parameter and to take the average of values to merge various parameters.
+This dynamic description for parameter correlations is required in order to implement an efficient and quick way to assign parameter correlations. It is then assumed that a tree structure is fit for this task since parameters can be correlated to other upstream parameters by using a single flow direction. A more detailed view in a Universal Markup Language (UML) graph is shown in Figure \ref{fig:level_3_config_uml}. The Class component generally forms the common element in the structure as seen in Figure \ref{fig:level_3_config}. It is also notable that Tags as well as Elements inherit from the Components Class and are instances of it. Components possess the attributes of other \textit{components}, their own \textit{name}, the \textit{merged parameter} which represents a single fused value for all parameters below and an attribute containing all lower lying parameters called \textit{all parameters} which contains all parameters. It also contains two functions for firstly merging its components into the merged value and secondly transforming its parameters into a desired state dimension. E.g. converting Static Pressure into a barometric altitude. The current default of these functions consists of relatively rudimentary logic to not transform the parameter and to take the average of values to merge various parameters.
 
 The inheriting entity \textit{Tag} mainly differs from the \textit{Component} in that it does not contain any subcomponents and contacts the skystash to gather all variables from the database containing the tags that are represented by its name. An optional attribute is a reference or calibration value that is assigned in the permanent configuration database (See chapter: \ref{chap:2-metadata-format}).
 %reference to DAQ and "permanent" database.
@@ -254,17 +253,17 @@ The entity \textit{Element} represents the parent node of the configuration tree
 \begin{figure}
     \centering
     \includegraphics[width=\textwidth]{level_3_config_uml}
-    \caption{Description of the Level 3 JSON check configuration}
+    \caption[Level 3 Parity UML configuration description]{Description of the Level 3 JSON check configuration developed in this work based on SOIL \cite{behrens_domain-specific_2021}. A general \textit{Component} type can be extended by the types \textit{Tag} for referencing parameter tags defined in skystash parameter metadata or the \textit{Component} can be extended by the \textit{Element} which is the parent element of the configuration structure and thus can contain independent state variables (\textit{Components}).}
     \label{fig:level_3_config_uml}
 \end{figure}
 
 %□ Parity implementation within hierarchical method
-Using this configuration method, the Parity model can then be calculated using given methods to transform and fuse the data. This starts by parsing the configuration structure, downloading sensors for each Tag and fusing sensors y into a fused value as defined in the configuration and as shown in figure \ref{fig:level_3_flow}.
+Using this configuration method, the Parity model can then be calculated using given methods to transform and fuse the data. This starts by parsing the configuration structure, downloading sensors for each Tag and fusing sensors y into a fused value as defined in the configuration and as shown in Figure \ref{fig:level_3_flow}.
 %□ Flow structure
 %□ Configuration file explanation
 
 
-%In figure \ref{fig:level_3_config, fig:level_3_config_uml} the general structure of the dynamic configuration in JSON format is shown. The configuration parent is a component containing subcomponents that themselves may contain subcomponents.
+%In Figure \ref{fig:level_3_config, fig:level_3_config_uml} the general structure of the dynamic configuration in JSON format is shown. The configuration parent is a component containing subcomponents that themselves may contain subcomponents.
 
 This system takes inspiration and inherits the configuration structure from the SensOr Interfacing Language (SOIL)\cite{behrens_domain-specific_2021}. In this work's use-case the \textit{Element} ISTAR research aircraft contains top-level components that are the independent state variables of the aircraft. An example that will be invested further in following sections is that of the \textit{static pressure}. The workflow begins by defining the Tag \textit{static pressure} in the permanent configuration and then configuring it into the Level 3-configuration structure. This tree structure is then parsed and calculates a value for each level of detail taking into account its lower lying neighbors. Some weighting also has to be considered since a number of redundant pressure sensor could skew results against a single GNSS parameter. Thus, a condensed parameter is calculated for each degree of freedom that is based on predefined algorithms and tags that can be freely defined within the configuration file that are then recursively parsed within the tree structure.
 %avoid weighting by structuring checks into a tree format for independent aircraft state variables.
@@ -272,7 +271,7 @@ This system takes inspiration and inherits the configuration structure from the 
 \paragraph{Limit Generation}
 Now the fused state value as well as the single, transformed sensor values are present. The next step consists of defining a limit for the resulting residual from combining the fused state with the single sensor value. Naturally, this could be defined manually by e.g. defining a limit of 0.5 meters for an altitude value. Since however automation is sought after, an automatic limit generation is determined as a requirement for dealing with these large data sets.
 
-Statistical methods then are examined for automatically generating thresholds for the parameter values. A method is then implemented to detrend the signal and take the resulting noise as the allowed deviation. In practice this results in a rudimentary high-pass filter (HPF) that gets realized by using a moving window function combined with an averaging function with a window width of $n=256$. After using this crude HPF to extract noise from the dataset we can acquire the standard deviation of this noisy signal and use it to set the limit for resulting residual evaluation.
+Statistical methods then are examined for automatically generating thresholds for the parameter values. A method is then implemented to detrend the signal and take the resulting noise as the allowed deviation. In practice this results in a rudimentary high-pass filter (HPF) that gets realized by using a moving window function combined with an averaging function with a window width of $n=256$. After using this crude HPF to extract noise from the dataset the standard deviation of this noisy signal can be acquired and used to set the limit for resulting residual evaluation.
 
 %TODO: plot here to visualize action
 
@@ -301,51 +300,51 @@ The flow of the Stashboard allows selection of any stash flight by using the sky
    % \caption{Selecting any flight using dropdown menus}
    % \label{fig:stashboard_selection}
 %\end{figure}
-This results in a flexible, scalable analytics application for skystash data and SHM reports that gives a quick overview over the vast amounts of data and be used by flight test engineers to get an overview over data quality as well as developers to optimize algorithms. The first prototype of the developed application is shown in figure \ref{fig:stashboard}.
+This results in a flexible, scalable analytics application for skystash data and SHM reports that gives a quick overview over the vast amounts of data and be used by flight test engineers to get an overview over data quality as well as developers to optimize algorithms. The first prototype of the developed application is shown in Figure \ref{fig:stashboard}.
 
 \begin{figure}[!h]
     \centering
     \includegraphics[width=\textwidth]{stashboard_screenshot_1}
-    \caption{Stashboard webbased analytic Tool }
+    \caption[Visualization: Stashboard Screenshot]{The Stashboard, a webbased analytic tool to quickly analyze data quality of an ISTAR flight. After the logo, the Digital Twin DigECAT mascot in front of the skystash logo it contains three distinct drop down menus for selecting a specific flight, collection and instance of the skystash. Below, the analytic plots visualize relevant Data Quality Indicators (DQI).}
     \label{fig:stashboard}
 \end{figure}
 A main paradigm of this visualization is that it prioritizes qualitative over quantitative design. Meaning that it does not mention explicit details but allows to comprehend and retrace the qualitative FMEA results. It shall be a UX-centric design with the possibility of identifying outliers or oversensitive SHM configuration parameters. With Level 1 of the SHM giving a quick overview over Sensor Availability and Level 2 serving as a simple check for any anomalies. Level 3 then serves as a more meaningful way to identify problems in the datasets by showing parameter relations and identifying deeper lying faults.
 
 \subsection{Timeline}
 
-Often, sensors may deliver erroneous or faulty values which get discarded along the workflow. These values are then plainly missing from the dataset. The Timeline attempts to solve this problem by generating a central overview over start and stop times of each sensor's measurement period. Complementing the timeline with the sampling rate check in Level 2 serves as a method to reliably detect missing sensor values. The Timeline's implementation is shown in figure \ref{fig:stashboard_timeline}.
+Often, sensors may deliver erroneous or faulty values which get discarded along the workflow. These values are then plainly missing from the dataset. The Timeline attempts to solve this problem by generating a central overview over start and stop times of each sensor's measurement period. Complementing the timeline with the sampling rate check in Level 2 serves as a method to reliably detect missing sensor values. The Timeline's implementation is shown in Figure \ref{fig:stashboard_timeline}.
 
 \begin{figure}[!h]
     \centering
     \begin{subfigure}[b]{1\textwidth}
-        \includegraphics[width=0.8\textwidth]{stashboard_timeline}
+        \includegraphics[width=\textwidth]{stashboard_timeline}
         \caption{The sensor timeline}
         \label{fig:stashboard_timeline_clean}
     \end{subfigure}
     \begin{subfigure}[b]{1\textwidth}
-        \includegraphics[width=0.8\textwidth]{stashboard_timeline_interactive}
+        \includegraphics[width=\textwidth]{stashboard_timeline_interactive}
         \caption{Interactive tooltip when hovering over a marker}
         \label{fig:stashboard_timeline_interactive}
     \end{subfigure}
-    \caption{The Sensor Timeline allows insights into the measurement periods of sensors}
+    \caption[Stashboard: Sensor Timeline]{The Sensor Timeline allows insights into the measurement periods of sensors by plotting start and end time of measurements to quickly identify outliers. Its rich tooltip enables a clean interface with detailed data handily available when hovering over a desired data point.}
     \label{fig:stashboard_timeline}
 \end{figure}
 
-The sensor primarily delivers a clean view showing markers for each sensor measurement with start markers being green and stop markers being red in figure \ref{fig:stashboard_timeline_clean}. Once additional information is desired related to an outlying sensor measurement the tooltip of a marker (see figure \ref{fig:stashboard_timeline_interactive}) shows parameter Name as well as the parameter's precise Start and Stop Time. Allowing further investigation by using the skystash architecture.
+The sensor primarily delivers a clean view showing markers for each sensor measurement with start markers being green and stop markers being red in Figure \ref{fig:stashboard_timeline_clean}. Once additional information is desired related to an outlying sensor measurement the tooltip of a marker (see Figure \ref{fig:stashboard_timeline_interactive}) shows parameter Name as well as the parameter's precise Start and Stop Time. Allowing further investigation by using the skystash architecture.
 
 \subsection{Level 1: Parameter Availability}
-After monitoring, a list of missing parameters is generated. To show and detect this info quickly, a speed gauge style display is chosen to display this scalar value as shown in figure \ref{fig:stashboard_speedo}.
+After monitoring, a list of missing parameters is generated. To show and detect this info quickly, a speed gauge style display is chosen to display this scalar value as shown in Figure \ref{fig:stashboard_speedo}. As speedometers are inherently performant and user-friendly for displaying scalar values they are chosen for displaying the number of available parameters.
 
 \begin{figure}[!h]
     \centering
     \includegraphics[width=0.4\textwidth]{stashboard_speedo}
-    \caption{Displaying the available number of parameters}
+    \caption[Stashboard: Level 1]{Displaying the available number of parameters in a gauge display. A fuller gauge signifies more available parameters. The levels for the red and yellow markings are set at the quality levels for $1\sigma$ and $2\sigma$ respectively.}
     \label{fig:stashboard_speedo}
 \end{figure}
 The red value is representing the percentage of the standard deviation ($\sigma=68.27\%$) and the yellow area represents double the standard deviation ($2\sigma=95.45\%$).
 
 \subsection{Level 2: Singular Sensor Examination}
-To quickly get an overview of missing parameters a method to show cumulative errors over the flight is developed (see figure \ref{fig:stashboard_level2}).
+To quickly get an overview of missing parameters a method to show cumulative errors over the flight is developed (see Figure \ref{fig:stashboard_level2}).
 %TODO: better explain advantages of plots.
 %Hier könntest du noch stärker auf die Vorteile der beiden Darstellungen eingehen. Warum diese beiden Formen der Darstellung? Was bringen diese dem User?
 \begin{figure}[!h]
@@ -362,36 +361,36 @@ To quickly get an overview of missing parameters a method to show cumulative err
         \caption{Interactive tooltip showing anomalous sensors at timestep}
         \label{fig:stashboard_level2_interactive}
     \end{subfigure}
-    \caption{Single Sensor Analysis shows cumulated faults over measuring period and a sensor fault ranking}
+    \caption[Stashboard: Level 2 display plotting $n_{errors}$ over the recording time and a total $n_{errors}$ ranking.]{The single sensor analysis in level 2 shows cumulated faults over the measuring  period and then ranks the sensors by their detected faults.}
     \label{fig:stashboard_level2}
 \end{figure}
 
 For each type of fault cumulative errors at a given timestep are added across sensors. Then the total number of errors is compounded for each sensor and displayed in a graph bar ranking.
-Specific points of interest on the graph can closer be examined by hovering over them as shown in figure \ref{fig:stashboard_level2_interactive}. The tooltip then shows the exact time of anomaly as well as the detected errors.
+Specific points of interest on the graph can closer be examined by hovering over them as shown in Figure \ref{fig:stashboard_level2_interactive}. The tooltip then shows the exact time of anomaly as well as the detected errors.
 
 
 \subsection{Level 3: Examining Sensor Interactions}
 %TODO: better explain advantages of plots.
 %Hier könntest du noch stärker auf die Vorteile der beiden Darstellungen eingehen. Warum diese beiden Formen der Darstellung? Was bringen diese dem User?
-The Sensor Interaction and correlation is calculated for each sensor. To then grasp the checked correlations a tree map is employed to display the hierarchical relations that is provided by the SHM-Level 3 configuration file (left in figure \ref{fig:stashboard_level3}).
+The Sensor Interaction and correlation is calculated for each sensor. To then grasp the checked correlations a tree map is employed to display the hierarchical relations that is provided by the SHM-Level 3 configuration file (left in Figure \ref{fig:stashboard_level3}).
 
 \begin{figure}
     \centering
     \includegraphics[width=\textwidth]{stashboard_level3}
-    \caption{Level 3}%todo: fix caption
+    \caption[Stashboard: Level 3 hierarchical configuration and fused state over time with detection range]{The developed Level 3 SHM visualization. On the left the hierarchical correlation of parameters the aircraft altitude is displayed. In the middle $n_{errors}$ over time is displayed in yellow as well as the fused state value in blue with the allowed range in a lighter shade of blue. On the right the mean of the sensors is compared to quickly identify strong outliers.}
     \label{fig:stashboard_level3}
 \end{figure}
 
-Then, the fused state value associated with its upper and lower limits is displayed in the following window. Overlaid, the amount of detected sensor errors is shown, similar to figure \ref{fig:stashboard_level2_clean}. Finally, the average of the residual for each parameter is shown to quantify any occurring bias in the right window.
+Then, the fused state value associated with its upper and lower limits is displayed in the following window. Overlaid, the amount of detected sensor errors is shown, similar to Figure \ref{fig:stashboard_level2_clean}. Finally, the average of the residual for each parameter is shown to quantify any occurring bias in the right window.
 
 
 \subsection{Implementation}
-To feed these displays a data pipeline is needed. The generated JSON-report file can be used to fulfill this job by feeding the flight SHM data to the Timeline, Level 1 and Level 2. For Level 3 the parameter SHM-metadata is needed as shown in figure \ref{fig:stashboard_flow}.
+To feed these displays a data pipeline is needed. The generated JSON-report file can be used to fulfill this job by feeding the flight SHM data to the Timeline, Level 1 and Level 2. For Level 3 the parameter SHM-metadata is needed as shown in Figure \ref{fig:stashboard_flow}.
 
 \begin{figure}[!h]
     \centering
     \includegraphics[width=0.8\textwidth]{stashboard_flow}
-    \caption{Data Pipeline for Stashboard elements to display SHM reports}
+    \caption[Stashboard: Visualization data flow]{The stashboard's flow of data as introduced in Figure \ref{fig:SHM_simplified} and \ref{fig:fti_microservices} is visualized by reading the JSON-metadata of the skystash at flight and parameter-level (see Figure \ref{fig:skystash_metadata_merging}). }
     \label{fig:stashboard_flow}
 \end{figure}
 

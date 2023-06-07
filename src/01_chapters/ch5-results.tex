@@ -37,19 +37,19 @@ Regarding the algorithmic part, the configuration has been created within a JSON
 
 Adherence to the FAIR principles should be the main focus. Especially when handling metadata. The developed metadata handling can assert to have guaranteed the findability, interoperability and reusability within the metadata part of this work since the metadata clearly describes the data at hand (Findability), it then also clearly describes what attributes the data has and with which attributes the SHM algorithms will be run (Interoperability, Reusability) to then allow future users to reproduce and comprehend the full SHM process. In addition, the low coupling and high cohesion are central paradigms of this work.
 
-The current form of the general config however poses some serious challenges and issues. It has the upside of being centralized but the downside of being in a not version-controlled environment. Not allowing backtracking and making search for faults very difficult. It also hinders development since experimental changes can only be made by copying to a local version that is then not version-controlled. It also does not allow dynamic changes to the metadata and in general does not adhere to the presented FAIR principles. However, once this issue has been fixed this work may bring more than marginal improvements to the world of data quality, allowing small changes of settings in the general configuration to trigger the SHM toolchain, updating data quality indices as you go. This metadata-workflow is also not limited to the  ISTAR data and may be applied to other aircraft or even machines or systems as well since the area of sensors is a constantly growing field. Even considering that in the IoT and IoP \cite{pennekamp_towards_2019} the actual sensor values are hardly ever checked. Since this is a growing topic this work attempts to lay a solid foundation upon which future endeavors may build upon and flourish.
+The current form of the general configuration however poses some serious challenges and issues. It has the upside of being centralized but the downside of being in a not version-controlled environment. Not allowing backtracking and making search for faults very difficult. It also hinders development since experimental changes can only be made by copying to a local version that is then not version-controlled. It also does not allow dynamic changes to the metadata and in general does not adhere to the presented FAIR principles. However, once this issue has been fixed this work may bring more than marginal improvements to the world of data quality, allowing small changes of settings in the general configuration to trigger the SHM toolchain, updating data quality indices as you go. This metadata-workflow is also not limited to the  ISTAR data and may be applied to other aircraft or even machines or systems as well since the area of sensors is a constantly growing field. Even considering that in the IoT and IoP \cite{pennekamp_towards_2019} the actual sensor values are hardly ever checked. Since this is a growing topic this work attempts to lay a solid foundation upon which future endeavors may build upon and flourish.
 
 
 \section{Algorithms}
 
 The core component of this work are the algorithms to actually detect the errors. These Algorithms have been implemented to catch the major recurring errors that are known to be within the datasets. Although most often errors occur in Level 1 and become critical due to oversight, other error types are also important to consider. The sheer amount of ISTAR sensors voids any ability to maintain an overview over the entire system.
 
-For trial and erroring and embarking on the SHM journey, the experimentally installed sensors in the ISTAR serve as a significantly better benchmark for errors since they are less reliable than the inherent aircraft sensors and thus also produce more interesting errors. Four errors from accelerometers and strain gauges are shown in figure \ref{fig:error_plots}. Ranging from interrupted transmission to odd offsets and plain overflow values.
+For trial and erroring and embarking on the SHM journey, the experimentally installed sensors in the ISTAR serve as a significantly better benchmark for errors since they are less reliable than the inherent aircraft sensors and thus also produce more interesting errors. Four errors from accelerometers and strain gauges are shown in Figure \ref{fig:error_plots}. Ranging from interrupted transmission to odd offsets and plain overflow values.
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.8\textwidth]{python_functions/images/error_plots}
-    \caption{Exemplary Errors occuring for experimental accelerometers and strain gauges.}
+    \caption[Errors upon which the algorithms are trained]{The exemplary errors upon which the SHM algorithms were trained are shown above. Three accelerometers in different flights were showing faulty behavior. The plots on the left show a sudden interruption of sensor data. While the plot on the top right shows an unusual offset of the accelerometer since the parameter value should average at one. On the bottom right the strain gauge sensor was expected to produce an output similar to the other sensors and contain some levels of noise. It is, however, at the hard limit.}
     \label{fig:error_plots}
 \end{figure}
 
@@ -58,56 +58,63 @@ For trial and erroring and embarking on the SHM journey, the experimentally inst
 
 
 In the following, the outcomes of algorithms of Levels 1-3 are presented and henceforth discussed.
-The validation errors shown in figure \ref{fig:error_plots} are mostly solved since some strange errors make automatic detection difficult.
+The validation errors shown in Figure \ref{fig:error_plots} are mostly solved since some strange errors make automatic detection difficult.
 Beginning with Level 1, all  parameters that have not made it to the skystash but have been expected to are filtered out. Acknowledging that Level 1 merely builds the first defense against errors this is a good start for the SHM, catching all errors that are plainly not available.
 
-In Level 2 the most recurring faults are caught. It evaluates single sensor timeseries and possibly transforms them to then check against the limits defined in the config. In plots \ref{fig:results_050303_spectrogram} the basic spectrogram for the first given accelerometer in \ref{fig:error_plots} is given.
+In Level 2 the most recurring faults are caught. It evaluates single sensor timeseries and possibly transforms them to then check against the limits defined in the configuration. In Figure \ref{fig:results_050303_spectrogram} the basic spectrogram for the top left accelerometer in Figure \ref{fig:error_plots} is given.
 
 \begin{figure}
     \centering
     \includegraphics[width=.7\textwidth]{03_figures/python_functions/images/FUS_050303_spectro.png}
+    \caption[Level 2 spectral analysis of an erroneous accelerometer]{Spectrogram analysis of the erroneous accelerometer in Figure \ref{fig:error_plots}'s top left. In this spectral analysis the color shows the amplitude of the frequency that is normalized to 1. The error is then quantifiable since hard limits can be defined for the signal's amplitude.}
     \label{fig:results_050303_spectrogram}
-    \caption{Spectrogram analysis of the erroneous accelerometer}
 \end{figure}
 
-Based upon this spectrographic analysis outliers can be identified whose movement is either too high or too low. Using this spectrogram an averaged normed amplitude value can be calculated that represents the sensor movement. In figure \ref{fig:results_050303_1} as well as \ref{fig:results_050303_2} the erroneous behaviors are clearly identified by falling outside the amplitude boundaries that have previously been defined in the general configuration.
-Additional faults such as the strain gauge forming the bottom right value in figure \ref{fig:error_plots} can quickly be identified since a regular value of such a sensor generally falls into the limits of $[-1000, +1000]$. This becomes obvious in figure \ref{fig:results_230306} when comparing to the limits in red.
+Based upon this spectrographic analysis outliers can be identified whose movement is either too high or too low. Using this spectrogram an averaged normed amplitude value can be calculated that represents the sensor movement. In Figure \ref{fig:results_050303_1} as well as \ref{fig:results_050303_2} the erroneous behaviors are clearly identified by falling outside the amplitude boundaries that have previously been defined in the general configuration.
+Additional faults such as the strain gauge forming the bottom right value in Figure \ref{fig:error_plots} can quickly be identified since a regular value of such a sensor generally falls into the limits of $[-1000, +1000]$. This becomes obvious in Figure \ref{fig:results_230306} when comparing to the limits in red.
+
+
 \begin{figure}
     \centering
     \includegraphics[width=\textwidth]{03_figures/python_functions/images/FUS_050303}
+    \caption[Using STFT and averaging to detect errors in Level 2]{STFT Analysis for a faulty acceleration sensor (top left in Figure \ref{fig:error_plots}).
+    Since the value could not be filtered by simply checking the limits a new method has been devised using the STFT. As the averaged amplitude exceeds the red limits as shown in the bottom figure the then detected anomalies can get recorded for the SHM.}
     \label{fig:results_050303_1}
-    \caption{Original Signal over STFT Averaged Amplitude}
 \end{figure}
+
+
 \begin{figure}
     \centering
     \includegraphics[width=\textwidth]{03_figures/python_functions/images/FUS_050303_2}
+    \caption[Using STFT on bottom left sensor from Figure \ref{fig:error_plots}]{For the second parameter at the bottom left in Figure \ref{fig:error_plots} the anomalous values can get detectd as well, proving the STFT approach to be successful on this limited validation set of sensor malfunctions.}
     \label{fig:results_050303_2}
-    \caption{Original Signal over STFT Averaged Amplitude}
 \end{figure}
+
+
 \begin{figure}
     \centering
     \includegraphics[width=\textwidth]{python_functions/images/DFUS_230306}
-    \caption{Malfunction of the Strain Gauge}
+    \caption[Malfunction of the Strain Gauge]{The malfunction of the strain gauge (bottom right in Figure \ref{fig:error_plots}) is shown. Since the average operating limits lie between -500 and +500 the conservatively chosen limit detects all erroneous values.}
     \label{fig:results_230306}
 \end{figure}
 
-Detecting smaller, constant offsets that are within limits such as the accelerometer in z direction in the top right plot in figure \ref{fig:error_plots} does not get filtered by Level 2 algorithms as shown in figure \ref{fig:results_050209}.
+Detecting smaller, constant offsets that are within limits such as the accelerometer in z direction in the top right plot in Figure \ref{fig:error_plots} does not get filtered by Level 2 algorithms as shown in Figure \ref{fig:results_050209}.
 \begin{figure}
     \centering
     \includegraphics[width=\textwidth]{03_figures/python_functions/images/FUS_050209}
+    \caption[Analysis of the offset vertical accelerometer]{The analysis of the offset vertical accelerometer shows that this offset is not very easy to detect without any additional sensor-proprietary information. However, a Level 3 approach in further development may be able to detect such an offset by determining the fused rigid body acceleration of the ISTAR in z-direction and detecting that the acceleration values in this figure obviously strongly differ from other acceleration sensor in z-direction.}
     \label{fig:results_050209}
-    \caption{Analysis of the offset vertical accelerometer}
 \end{figure}
 
 To detect an offset in z direction it is more sensible to include other correlating z sensors or the rigid body model of the aircraft. Determining in acceleration in z direction within such a model should allow correlation of flight angles as well as other accelerometers in the Inertial Measurement Units (IMUs) as well as relational angles indicating turning of the aircraft and hence more acceleration in z-direction.
 \begin{figure}
     \centering
     \includegraphics[width=0.9\textwidth]{stashboard_level3_zoomed}
-    \caption{Level 3 calculation for barometric altitudes with a tolerance area (transparent blue)}
+    \caption[Level 3 SHM for the altitude-dependent parameters.]{The level 3 calculation for barometric altitudes with a the tolerance area shown as the transparent blue area are displayed. Since the allowed deviation is calculated automatically it is quite generous with about 100m. This is however far enough to determine that the static pressure measured by the nose-boom is out of bounds for the entire time of this recording session.}
     \label{fig:stashboard_level3_zoomed}
 \end{figure}
 
-For now, however, only the altitude with the specialization of the barometric altitudes has been implemented. In Level 3 an automatic limit gets calculated based on the fused signal. Here, the fused signal gets detrended to remove any trends and the standard deviation of the signal gets used to measure expected deviations. The fused signal combined with the expected deviation is shown in Stashboard figure \ref{fig:stashboard_level3_zoomed}.
+For now, however, only the altitude with the specialization of the barometric altitudes has been implemented. In Level 3 an automatic limit gets calculated based on the fused signal. Here, the fused signal gets detrended to remove any trends and the standard deviation of the signal gets used to measure expected deviations. The fused signal combined with the expected deviation is shown in Stashboard Figure \ref{fig:stashboard_level3_zoomed}.
 
 Additionally, level 3 serves as an additional layer of safety against errors. It also is possible to detect errors with a higher precision compared to the Level 2 algorithms.
 
@@ -117,9 +124,9 @@ Additionally, level 3 serves as an additional layer of safety against errors. It
 
 \paragraph{Choosing check parameters}
 
-Automatically setting boundaries for Level 2 has proven to difficult due to the sheer difference of sensor behavior available. Hence, the automatically set limits for Level 2 were abandoned and replaced by hard limits that needed to be set in the general config. However, automatically determined boundaries were still employed and shown to be working for Level 3. Using the detrended signal has proven to deliver sensible limits as shown in the Stashboard in figure \ref{fig:stashboard_level3}.
+Automatically setting boundaries for Level 2 has proven to difficult due to the sheer difference of sensor behavior available. Hence, the automatically set limits for Level 2 were abandoned and replaced by hard limits that needed to be set in the general configuration. However, automatically determined boundaries were still employed and shown to be working for Level 3. Using the detrended signal has proven to deliver sensible limits as shown in the Stashboard in Figure \ref{fig:stashboard_level3}.
 
-However, setting limits for Level 2 still requires some trial and error to reliably work for sensors with the validation loop being driven by previously detected error types. It shows that while conservatively chosen ranges do not indicate many occurrences, tighter limits enable more detailed monitoring. Choosing a range still need some tuning since the limits at figure \ref{fig:results_050303_1} seem safe but for figure \ref{fig:results_050303_2} seem very close to detection. Thus, still needing further investigation to safely predict errors. Possibly implementing other type of sensor movement analyzes to deliver results that are more reliably and more tailored to various sensor.
+However, setting limits for Level 2 still requires some trial and error to reliably work for sensors with the validation loop being driven by previously detected error types. It shows that while conservatively chosen ranges do not indicate many occurrences, tighter limits enable more detailed monitoring. Choosing a range still need some tuning since the limits at Figure \ref{fig:results_050303_1} seem safe but for Figure \ref{fig:results_050303_2} seem very close to detection. Thus, still needing further investigation to safely predict errors. Possibly implementing other type of sensor movement analyzes to deliver results that are more reliably and more tailored to various sensor.
 
 Another interpretation of the sensitivity in analysis methods lies in too tight tolerances. These may detect every small aberration but generate too many occurrences when actual malfunctions are of interest and not every single perturbation. Due to limited time this algorithm could not be examined on its performance for other datasets which remains open for future work.
 
@@ -127,7 +134,7 @@ Another interpretation of the sensitivity in analysis methods lies in too tight 
 \subsection{Discussion}
 The results from the algorithms speak for themselves. Although the entire configuration set is not complete and the system is in prototype stadium good results have been achieved. Most of the required errors and malfunctions have been identified by the SHM developed in this work and even if these algorithms may not suffice more complex errors, the overall architecture makes integration of new algorithms for quick deployment easy.
 %todo: show for which errors this has been achieved
-The results in Level 1 are primarily satisfying the application's needs. However, additional interfaces could be implemented displaying sensor subsets in a hierarchical view similar to Level 3 Stashboard implementation (see figure \ref{fig:stashboard_level3}). This could facilitate interpretation which subset of experiments is currently performed. E.g. whether the Nose boom of the ISTAR is presently used based on the given data and metadata.
+The results in Level 1 are primarily satisfying the application's needs. However, additional interfaces could be implemented displaying sensor subsets in a hierarchical view similar to Level 3 Stashboard implementation (see Figure \ref{fig:stashboard_level3}). This could facilitate interpretation which subset of experiments is currently performed. E.g. whether the Nose boom of the ISTAR is presently used based on the given data and metadata.
 
 Level 2 algorithms worked well on the posed problems and also detected complex errors such as the accelerometer faults that resulted in a very little amount of noise. Using Level 2 approaches enabled detection of most known errors, providing a substantial foundation for the proceeding work on ISTAR data. Implementing new functions is realized by using pandas series and dataframes for function in- and outputs and modifying the SHM JSON-configuration.
 The FMEA developed also paves the way for further advancements such as a real-time implementation that may be used during experiments to detect possible sensor malfunctions based on processes that are computationally frugal and are able to run in real-time.
@@ -138,16 +145,16 @@ The FMEA developed also paves the way for further advancements such as a real-ti
 %Versuche die positiven Aspekte stärker in der Vordergrund zu rücken.
 Parity Equations enable correlation of parameter behavior even though they present a prototypical beginning for FMEA implementations in the SHM. Neglecting the limitations of Parity Equations they still provide value and truth for correlation making them indispensable in their function as white-box models. The Parity Equations developed in this work still has potential. It may be developed further to include a rigid body model of the aircraft, correlating various axes and states to finally achieve a minimal model error.
 Applications in other fields might also find this approach useful. Since the configuration has the only constraint of being hierarchical other physical relations such as in industrial applications can also be represented once these physical relations are mapped to python functions.
-Considering further possibilities for Level 3 FMEA various approaches could be assessed and implemented. These would be methods such as Kalman Filtering \cite{lie_synthetic_2013}, PCA \cite{isermann_fault-diagnosis_2006} and other analytical approaches \cite{freeman_air_2013, perhinschi_integrated_2010}.  Exceeding the conventional FMEAs presented in figure \ref{fig:FMEA-methods}, novel methods ranging from model driven designs such as the Pseudo Transfer Function approach \cite{aljanaideh_aircraft_2015} up to state of the art data-driven models for image processing such as GANomaly \cite{akcay_ganomaly_2018} could be implemented. These could be modified for use in research data using latent spaces to identify principal state parameters as well as identifying possibly new hidden correlations.
+Considering further possibilities for Level 3 FMEA various approaches could be assessed and implemented. These would be methods such as Kalman Filtering \cite{lie_synthetic_2013}, PCA \cite{isermann_fault-diagnosis_2006} and other analytical approaches \cite{freeman_air_2013, perhinschi_integrated_2010}.  Exceeding the conventional FMEAs presented in Figure \ref{fig:FMEA-methods}, novel methods ranging from model driven designs such as the Pseudo Transfer Function approach \cite{aljanaideh_aircraft_2015} up to state of the art data-driven models for image processing such as GANomaly \cite{akcay_ganomaly_2018} could be implemented. These could be modified for use in research data using latent spaces to identify principal state parameters as well as identifying possibly new hidden correlations.
 
 Within the algorithmic step it has been endeavored to comply with the Interoperable and Reusable criteria of the FAIR principles. Implementing this by using JSON-configurations in standardized formats when possible and decoupling the actual algorithmic from the data communication by using pandas as the interface for the python functions.
 
-%todo:
+%todo: comment FAIR
 %Die FAIR Prinzipien beziehen sich eigentlich nur auf Daten selbst und weniger auf Algorithmen. Da Source Code selbst aber auch Daten sind, passt das schon.
 %
 %Mir fehlt allerdings der FAIR Aspekt bezüglich der Datenstruktur in der du die Ergebnisse im Stash speicherst. In Bezug auf die spätere und langfristige Verwendbarkeit der Daten ist das der entscheidende Punkt. Da kannst du doch mehr zu sagen als "wir verwenden JSON", oder? Wie sieht die Datenstruktur aus, welche interpretierbaren Keys werden verwendet? Dieser Teil ist allerdings eher was für Kapitel 4. Hier wäre dann eine Evaluierung der gewählten Struktur passend: Warum ist die Struktur FAIR?
 
-\section{Visualization (Accessible, Interoperable, Reusable)}
+\section{Visualization}
 An interactive frontend for the data quality report has been developed to enable Accessibility of the SHM. Visualizing the data quality for an entire flight dataset at a single glance. Searchable metadata tags enable a dynamic search within the skystash database and due to its web based architecture it can be deployed as a webservice to facilitate usage.
 
 \subsection{Results}
@@ -169,14 +176,14 @@ For future expanses, new data quality visualizations and overall displays allow 
 
 \section{Integration of the application}
 
-Summarizing the development, the integration into the skystash ecosystem builds the foundation for a novel data space for Flight Test Data. Following figure \ref{fig:fti_microservices}, all tools are dependent on the skystash and serve as extensions for the existing architecture, expanding it to elevate data interpretability which is vital in the jumble of Research Data available. The programming standard of low coupling but high cohesion \cite{stevens_structured_1974} leverages the skystash API and allows for reduction of technical debt in the future, making maintenance and expansions on single components less complex, reducing interactions.
-The overall evaluation of FAIR principles is shown in figure \ref{fig:FAIR_evaluation}. Starting from the upload to the skystash. The genuine DAQ data and metadata is preserved. Metadata Enrichment then decodes the DAQ config and assigns extended information to the DAQ metadata and enhancing the knowledge further by also adding SHM-configurations. Within the following data processing step, all metadata for calculations is already available and the processing step can run without any interaction and also allowing backtracking based upon the enriched metadata that provides the data processing configuration. Finally, the report is uploaded to the skystash. It then serves as an indicator for the data quality which can then get interpreted by the data visualization tool which allows quick interpretation of the generated report.
+Summarizing the development, the integration into the skystash ecosystem builds the foundation for a novel data space for Flight Test Data. Following Figure \ref{fig:fti_microservices}, all tools are dependent on the skystash and serve as extensions for the existing architecture, expanding it to elevate data interpretability which is vital in the jumble of Research Data available. The programming standard of low coupling but high cohesion \cite{stevens_structured_1974} leverages the skystash API and allows for reduction of technical debt in the future, making maintenance and expansions on single components less complex, reducing interactions.
+The overall evaluation of FAIR principles is shown in Figure \ref{fig:FAIR_evaluation}. Starting from the upload to the skystash. The genuine DAQ data and metadata is preserved. Metadata Enrichment then decodes the DAQ configuration and assigns extended information to the DAQ metadata and enhancing the knowledge further by also adding SHM-configurations. Within the following data processing step, all metadata for calculations is already available and the processing step can run without any interaction and also allowing backtracking based upon the enriched metadata that provides the data processing configuration. Finally, the report is uploaded to the skystash. It then serves as an indicator for the data quality which can then get interpreted by the data visualization tool which allows quick interpretation of the generated report.
 
 
 \begin{figure}
     \centering
     \includegraphics[width = 0.6\textwidth]{FAIR_evaluation}
-    \caption{Correlating parts of this work with adherence to the FAIR guiding principles}
+    \caption[FAIR-correlation matrix for the SHM-]{Correlating parts of this work by rating their adherence to the FAIR guiding principles. Shown are the icons describing the singular decoupled packages introduced in Figure \ref{fig:SHM_simplified} and \ref{fig:fti_microservices} that work by interacting with the skystash architecture (see Chapter \ref{chap:skystash})}
     \label{fig:FAIR_evaluation}
 \end{figure}
 

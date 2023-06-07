@@ -46,13 +46,15 @@ Within the following, some consideration is given to the inherent flaws lying in
     f_{sampling} > 2 \cdot f_{max}
     \label{eq:nyquistshannon}
 \end{equation}
-For context in this work, the ASCB-D has the tradeoff that it resamples all aircraft signals to 20Hz which in turn leads to some information loss with some signals being downsampled and some being oversampled. For most applications the Sampling of 20Hz is satisfactory although a resampling of any data inherently leads to information loss and is thus not desirable in most cases. For Illustration, an exemplary time-, and value-sampling of a Pitot Tube is shown.
+For context in this work, the ASCB-D has the tradeoff that it resamples all aircraft signals to 20Hz which in turn leads to some information loss with some signals being downsampled and some being oversampled. For most applications the Sampling of 20Hz is satisfactory although a resampling of any data inherently leads to information loss and is thus not desirable in most cases. This makes potentially noisy sensors output the same value twice in a row since the DAQ hasn't yet received the new sensor data and outputs the same value multiple times in a row. Even sensors with a high noise ratio such as the fine part of a GNSS latitude signal may sometimes output the same value twice in a row which is highly unlikely to happen on a statistical basis. Since this occurs quite often the question arises if the actual sampling may be lower or higher than the actual data. Perhaps it is then justified to resample some data to reduce oversampling in order to increase the data quality mitigating the changes made by the systems in and around sensor and DAQ.
+
+For Illustration, an exemplary time-, and value-sampling of a Pitot Tube is shown.
 \begin{figure}[!h]
     \centering
     \begin{subfigure}{\textwidth}
         \centering
         \includegraphics[width=0.8\textwidth]{03_figures/signal_recording}
-        \caption[Exemplary pitot tube for visualizing sensor error]{A pitot tube setup for measuring dynamic pressure in order to measure aircraft velocity. In this figure three places are marked in which the state signal is skewed in a significant way.}
+        \caption[Exemplary pitot tube for visualizing sensor error]{A pitot tube setup for measuring dynamic pressure in order to measure aircraft velocity. Three spots are marked in which the state signal is skewed in a significant way.}
         \label{fig:signal_processing_setup}
     \end{subfigure}
     \begin{subfigure}{\textwidth}
@@ -61,15 +63,13 @@ For context in this work, the ASCB-D has the tradeoff that it resamples all airc
         \caption[Pitot Tube signal visualization with inherent errors]{Original signal transformed into measured and discretized signal. The signal transformation at each step is shown together with the error occurring at each step}
         \label{fig:signal_processing_plots}
     \end{subfigure}
-    \caption[Exemplary signal processign flow for a pitot tube]{An illustration of random signal errors for a pitot tube. The Figure contains the undisturbed state variable (1), the unmodified measurement by the analog sensor (2) and the digitized, discretized sensor (3) values. In Figure \ref{fig:signal_processing_plots} the modified signal is shown in blue with the error in orange.}
+    \caption[Exemplary signal processing flow for a pitot tube]{An illustration of random signal errors for a pitot tube. The Figure contains the undisturbed state variable (1), the unmodified measurement by the analog sensor (2) and the digitized, discretized sensor (3) values. In Figure \ref{fig:signal_processing_plots} the modified signal is shown in blue with the error in orange.}
     \label{fig:signal_processing}
 \end{figure}
 
 The undisturbed system state at point 1 gets measured by a sensor and is transformed into the analog, measured signal at point 2 with the error being represented by the orange plot. An ADC is used in the next step of the signals journey and discretizes the time by sampling the signal to a given frequency and a discrete value given by a given resolution. Having been digitized at point 3 the signal error subsequently grows even further. Other error mechanisms that occur randomly (stochastic) include but are not limited to sensor drift as well as random noise. In the following, qualifiers and descriptors are introduced to quantify these qualities.
 
-%\paragraph{Data Sampling} %todo: deal with this section pls
-%Some Oversampling of sensors happens in the DAQ due to the aircraft systems.
-%The ASCB bus samples all parameters to 20Hz and consequentially data gets either lost or needlessly oversampled in the process. This makes potentially noisy sensors output the same value twice in a row since the DAQ hasn't yet received the new sensor data and outputs the same value multiple times in a row. Even sensors with a high noise ratio such as the fine part of a GNSS latitude signal outputs the same value twice in a row which is highly unlikely to happen on a statistical basis. Since this occurs quite often the question arises if the actual sampling may be lower than the actual data. Perhaps justifying resampling at certain process to mitigate the changes made by the systems between sensor and DAQ.
+
 
 
 \newpage
@@ -77,7 +77,6 @@ The undisturbed system state at point 1 gets measured by a sensor and is transfo
 
 \section{Definitions}
 Motivating this section is the desire to understand the fundamental error mechanism. Definition for errors are adopted from \textcite{isermann_fault-diagnosis_2006} defined in table \ref{tab:system_props_isermann}, the de-facto standard of Fault Diagnosis descriptions within the automation domain.
-
 
 \subsection{Errors}
 
@@ -95,9 +94,9 @@ To find and detect errors it is firstly important to understand them. Within Tab
     \label{tab:error_types}
 \end{table}
 
-%TODO: comment christina: not possible to measure without errors (heisenberg). But rather possible to determine reliability, precision, trueness of a signal aptly.
+
 Identifying sensor errors is the goal of this thesis. As described in Figure \ref{fig:basic_error} the error can be imagined as a disturbance added upon the original sensor value. Which then results in a skewed sensor measurement.
-\begin{figure}[ht]
+\begin{figure}[b]
     \centering
     \includegraphics[width=0.5\textwidth]{basic_error}
     \caption{A sensor measurement is always the result of the actual true value plus a measuring error.}
@@ -108,7 +107,7 @@ In Table \ref{tab:error_types} sensor errors are divided into 3 subcategories wh
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.4\textwidth]{sensor_errors_systemic}
-    \caption[Systemic Sensor Errors]{The types of systemic sensor errors introduced in Table \ref{tab:error_types} are shown in this figure by plotting the measured value over the true value. \cite{hartmann_navigation-sensordatenfusion_2022, din_din_1995} }
+    \caption[Systemic Sensor Errors]{The types of systemic sensor errors introduced in Table \ref{tab:error_types} are shown by plotting the measured value over the true value. \cite{hartmann_navigation-sensordatenfusion_2022, din_din_1995} }
     \label{fig:sensor_errors_systemic}
 \end{figure}
 
@@ -117,14 +116,14 @@ Errors that also occur continuously are random errors that are however unpredict
 
 
 % todo: im allgemeinen noch mehr zu abbildungen erzählen. mehr motivieren QEC?
-Now the question poses if errors can be pinpointed to their origin from where such errors arise. Generally, single sensors carry inherent errors such as clogged static ports (spontaneous hysteresis) or sensor drift (spontaneous bias) but errors also occur within the complex aircraft system architecture itself. An exemplary process step is the Analog to Digital Conversion. Sensor outputs are primarily analog but are then digitized in order to get transported by the aircraft data bus. This process is accomplished using an Analog Digital Converter (ADC), effectively eliminating information from the system. The full process is shown in figure \ref{fig:signal_processing}.
+Now the question poses if errors can be pinpointed to their origin from where such errors arise. Generally, single sensors carry inherent errors such as clogged static ports (spontaneous hysteresis) or sensor drift (spontaneous bias) but errors also occur within the complex aircraft system architecture itself. An exemplary process step is the Analog to Digital Conversion. Sensor outputs are primarily analog but are then digitized in order to get transported by the aircraft data bus. This process is accomplished using an Analog Digital Converter (ADC), effectively eliminating information from the system. The full process is shown in Figure \ref{fig:signal_processing}.
 
 \subsection{Data Quality}
 % todo: kommentar einfügen: Oder ganz generell: Um erkennen zu können ob das gemessene Signal richtig sein können muss das Sastem wissen was es misst. Diese Information muss in maschinenlesbarer Form vorliegen
 Foundation for this work lies within a common understanding of its results. Standardized qualifiers are found within control theory \cite{isermann_fault-diagnosis_2011} as well as GNSS applications \cite{teunissen_springer_2017}. Standardization is also found within the ISO-Database. However, when beginning to describe data quality within metadata, the issue of metadata quality itself also arises. In the following, a brief overview is given over descriptors and their qualities based on norms.
 
 \paragraph{A general introduction to Semantics}
-Semantics is a broad term due to its common use. One definition that has found some acceptance is the definition by Metzlers Lexikon which relies on theories by Blackburn and Kutschera \cite{shoemaker_spreading_1987,kutschera_sprachphilosophie_1975}. The following paragraph contains a small explanatory parenthesis to motivate the term Semantics and its parent term being the field of semiotics. Semiology (greek:\textgreek{σημεῖον},semeion:sign) describes the theory of signs and their usage as described in Figure \ref{fig:semiotics}. It is divided into the areas of semantics, syntactics and pragmatics in which syntactics are defined as the internal structure of signs within sign systems. In the next step pragmatics are defined as the theory of sign usage effectively thinking about how interaction with signs works. Finally, semantics define the relationship between signs and described objects. They work by allocating a structure/model to a predefined expression in the way a metadata model uses standardized descriptors to represent a meaning in the real world.
+Semantics is a broad term due to its common use. One definition that has found some acceptance is the definition by Metzlers Lexikon which relies on theories by Blackburn and Kutschera \cite{shoemaker_spreading_1987,kutschera_sprachphilosophie_1975}. The following paragraph contains a small explanatory parenthesis to motivate the term Semantics and its parent term being the field of semiotics. Semiology (greek:\textgreek{σημεῖον},semeion:sign) describes the theory of signs and their usage as described in Figure \ref{fig:semiotics}. It is divided into the areas of semantics, syntactics and pragmatics in which syntactics are defined as the internal structure of signs within sign systems. In the next step pragmatics are defined as the theory of sign usage effectively thinking about how interaction with signs works. Finally, semantics define the relationship between signs and described objects. They work by allocating a structure or model to a predefined expression in the way a metadata model uses standardized descriptors to represent a meaning in the real world.
 
 \begin{figure}[h]
     \centering
@@ -141,9 +140,9 @@ Contextually, the metadata syntax of this work will be in a JSON-format. The use
 
 Unambiguous terms are needed to provide clear and concise information within the sensor health monitoring data structure. This is especially important to create a common base of understanding. In the following, industry standards and definitions for data metrics are summarized.
 
-Definitions based on a control theory background are shown in table \ref{tab:system_props_isermann}. These have been agreed upon in discussion with vdi/vde committees as well as the Reliability, Availability and Maintainability (RAM) dictionary. \cite{isermann_trends_nodate,din_din25424_fehlerbaumanalysepdf_1977}
+Definitions based on a control theory background are shown in table \ref{tab:system_props_isermann}. These have been agreed upon in discussion with VDI and VDE committees as well as the Reliability, Availability and Maintainability (RAM) dictionary. \cite{isermann_trends_nodate,din_din25424_fehlerbaumanalysepdf_1977}
 
-These terms are divided into the contextual categories of primarily defining signal and state descriptors. Next up are functions for fault processing followed by model attributes that are employed to compare them to the actual system. System properties can then be inferred by leveraging the previous descriptors for states, functions and models. Illustrating the fault detection process, figure \ref{fig:basic_error_filter} shows the method generating a residual which in turn enables interpretation of said residual which may contain information to isolate and identify the error.
+These terms are divided into the contextual categories of primarily defining signal and state descriptors. Next up are functions for fault processing followed by model attributes that are employed to compare them to the actual system. System properties can then be inferred by leveraging the previous descriptors for states, functions and models. Illustrating the fault detection process, Figure \ref{fig:basic_error_filter} shows the method generating a residual which in turn enables interpretation of said residual which may contain information to isolate and identify the error.
 
 
 \begin{figure}[ht]
@@ -161,11 +160,11 @@ Further definitions are also employed by the Federal Aviation Administration (FA
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.7\textwidth]{dart_boards}
-    \caption{Dart boards displaying the Precision (as $\sigma$), Trueness (as $\mu$) and Accuracy as the cumulative sensor quality \cite{iso_iso5725-1_accuracy_1997}}
+    \caption[Data Quality Dartboards]{Dart boards displaying the Precision (as $\sigma$), Trueness (as $\mu$) and Accuracy as the cumulative sensor quality \cite{iso_iso5725-1_accuracy_1997}}
     \label{fig:dart_boards}
 \end{figure}
 
-Following the GNSS domain, the terms accuracy and precision are important measures for quantifying results. For representation, a dart board is illustrated in figure \ref{fig:dart_boards}. It is then important to distinguish that good accuracy is the result of good precision as well as a good trueness. A mathematical description for the precision could be the standard deviation and the deviation of mean and actual value as the trueness. \cite{iso_iso5725-1_accuracy_1997}\cite[S.33ff.]{smith_scientist_1999}
+Following the GNSS domain, the terms accuracy and precision are important measures for quantifying results. For representation, a dart board is illustrated in Figure \ref{fig:dart_boards}. It is then important to distinguish that good accuracy is the result of good precision as well as a good trueness. A mathematical description for the precision could be the standard deviation and the deviation of mean and actual value as the trueness. \cite{iso_iso5725-1_accuracy_1997}\cite[S.33ff.]{smith_scientist_1999}
 
 
 
@@ -219,12 +218,14 @@ Following the GNSS domain, the terms accuracy and precision are important measur
 %Validation: Black Box Testing. Results match expectations Verification: White Box Testing. Establish algorithm's truth
 
 \newpage
+
+
 \section{SHM Algorithms}
 %todo: capitalize figure-->Figure for all occurrences
 Building now upon a solid foundation of descriptors, some previously implemented systems dealing with monitoring and supervision tasks are reviewed. The superset of these monitoring systems is generally described as Failure Mode and Effect Analysis (FMEA). In the following, some FMEA implementations are reviewed. Theoretic fundamentals for this works' actual implementation are then shown, checking sensor values against limits and then correlating sensor values with each other.
 
 
-For the SHM process three distinct steps are proposed to filter out malfunctions by severity and to order the process flow. This entire flow is shown in Figure \ref{fig:SHM_simplified} displaying the proposed essential  steps of the SHM. The core of the work is the data processing represented by the gear icon. A core problem of this work is finding a standardized way to transfer information between steps. In order to solve this a metadata model will have to be found that allows for standardized data transfer in order to allow reusability of this work.
+For the SHM process three distinct steps are proposed to filter out malfunctions by severity and to order the process flow. This entire flow is shown in Figure \ref{fig:SHM_simplified} displaying the proposed essential steps of the SHM. The core of the work is the data processing represented by the gear icon. A core problem of this work is finding a standardized way to transfer information between steps. In order to solve this a metadata model will have to be found that allows for standardized data transfer in order to allow reusability of this work.
 \begin{figure}[!h]
     \centering
     \includegraphics[width=\textwidth]{SHM_simplified}
@@ -250,7 +251,7 @@ In the following, fundamental statistical methods are shown to prepare the funda
     \label{fig:statistics_clean}
 \end{figure}
 
-Signal properties are examined for a given signal in figure \ref{fig:statistics_clean}
+Signal properties are examined for a given signal in Figure \ref{fig:statistics_clean}
 
 %Sensors generally produce errors within expected forms of output. -Noise -Measure using Covariance --> autocovariance -Offset -No response
 
@@ -320,7 +321,7 @@ Another parameter is the coefficient of variation (CV) which is the standard dev
     \label{fig:statistics_full}
 \end{figure}
 
-An arising problem based on the SNR and CV are however that they scale based on the mean value. Should the mean value lie at about 0 for e.g. a sensor of an aircraft control surface, the signal to noise ratio will be relatively high compared to an acceleration sensor in z axis with a constant offset of 1g. Practical example for mean and standard deviation in a given signal are overlaid in figure \ref{fig:statistics_basic}
+An arising problem based on the SNR and CV are however that they scale based on the mean value. Should the mean value lie at about 0 for e.g. a sensor of an aircraft control surface, the signal to noise ratio will be relatively high compared to an acceleration sensor in z axis with a constant offset of 1g. Practical example for mean and standard deviation in a given signal are overlaid in Figure \ref{fig:statistics_basic}
 To evaluate a signal according to the quantities the next logical step is the probability mass function (PMF) \ref{eq:pmf}. This part of signal evaluation is shown in the following Figure \ref{fig:statistics_full} by adding a histogram to the analysis which counts the signal points lying within discretized value ranges.
 
 \begin{equation}
@@ -358,7 +359,7 @@ Within the first step, the main challenge lies within the acquisition of sound c
 \subsection{Check 2: Plausibility}
 \label{chap:2-plausibility}
 
-Within the plausibility check the single parameter is checked against limits that shall be preconfigured for each parameter. Various methods are examined. The primary focus is checking the value against limits to detect extreme values that are unrealistic. Within the next step, the series is transformed with the noise or other desired attributes being extracted. These attributes can then in turn be checked against other limits. For the noise, we examine various known methods to create a heuristic for noise approximation. Of course, noise approximation models range in complexity and detail from a simple moving window approximation into Fourier transforms (Fast-Fourier-Transform (FFT), Short-Time-Fourier-Transform(STFT), Wavelet Transform (WT) and into advanced works such as language-processing models \cite{hendriks_noise_2008} which exceed the scope of this work and may be implemented at a later date.
+Within the plausibility check the single parameter is checked against limits that shall be preconfigured for each parameter. Various methods are examined. The primary focus is checking the value against limits to detect extreme values that are unrealistic. Within the next step, the series is transformed with the noise or other desired attributes being extracted. These attributes can then in turn be checked against other limits. For the noise, various known methods are examined to create a heuristic for noise approximation. Of course, noise approximation models range in complexity and detail from a simple moving window approximation into Fourier transforms (Fast-Fourier-Transform (FFT), Short-Time-Fourier-Transform(STFT), Wavelet Transform (WT) and into advanced works such as language-processing models \cite{hendriks_noise_2008} which exceed the scope of this work and may be implemented at a later date.
 
 These functions are evaluated into a ranking and displayed in Table \ref{tab:lvl2_comparison}. After brief evaluation, the Short-Time-Fourier Transform is considered due to its comparability among sensor signals. Allowing to compare movement activity by amplitude.
 \begin{table}[h]
@@ -392,7 +393,7 @@ The functionality, applications as well as usability within the context of this 
 
     $$T_{Nxr} = X_{Nxm}  P_{mxr}$$
 
-    P being the permutation matrix that transform the original data into the principal components. The overall strategy to generate a PC is shown in figure \ref{fig:pca_variance} as finding a function between two parameters $x_1$ and $x_2$ that maximizes the variance of data in a newly generated principal component. However, drawbacks arise using this approach since the variance optimization only happens linearly and is not able to function for nonlinear correlations similar to a standard Pearson-Coefficient Correlation matrix. \cite{handl_multivariate_2017}
+    P being the permutation matrix that transform the original data into the principal components. The overall strategy to generate a PC is shown in Figure \ref{fig:pca_variance} as finding a function between two parameters $x_1$ and $x_2$ that maximizes the variance of data in a newly generated principal component. However, drawbacks arise using this approach since the variance optimization only happens linearly and is not able to function for nonlinear correlations similar to a standard Pearson-Coefficient Correlation matrix. \cite{handl_multivariate_2017}
 
     \begin{figure}[h]
         \centering
@@ -405,7 +406,7 @@ The functionality, applications as well as usability within the context of this 
     PCs can be created in any direction. Where input is needed however is the number of Principal components that shall be kept. A cutoff value can be defaulted to but this may not be feasible for multidimensional systems such as the flight test data that is at hand.
 
 
-    Eliminating a principal component becomes easy if parameters show a direct correlation such as in figure \ref{fig:pca_variance}. The gatherings of $t_2$ then mostly consist of noise and can be safely discarded.
+    Eliminating a principal component becomes easy if parameters show a direct correlation such as in Figure \ref{fig:pca_variance}. The gatherings of $t_2$ then mostly consist of noise and can be safely discarded.
 
     \item[Utilization]\hfill
 
@@ -413,7 +414,7 @@ The functionality, applications as well as usability within the context of this 
         \vspace{-20pt}
         \centering
         \includegraphics[width=0.48\textwidth]{pca_FD}
-        \caption{Process input U and Sensor Measurement Y get transformed into state X and fed into a PCA. N indexes timesteps and $X^*$ is the predicted output.\cite[p.268]{isermann_fault-diagnosis_2006}}
+        \caption[PCA for residual generation in FMEA]{Process input U and Sensor Measurement Y get transformed into state X and fed into a PCA. N indexes timesteps and $X^*$ is the predicted output.\cite[p.268]{isermann_fault-diagnosis_2006}}
         \label{fig:pca_FD}
     \end{figure}
 
@@ -515,7 +516,7 @@ An algorithm for evaluating data quality in level 3 must now be found based on t
     \caption[A grand FMEA overview \cite{zhang_bibliographical_2008}]{An overview over various kinds of FMEA satisfying a broad range of specific requirements that may be posed as system specifications. \cite{zhang_bibliographical_2008} While clear distinctions must be made between quantitative and qualitative methods the main distinction lies in the amount of system knowledge provided to the method.}
     \label{fig:FMEA-methods}
 \end{figure}
-Within this endeavor it however needs to be considered that this summary of FMEA methods barely scratches the surface. Far more FMEA variations exist than shown in figure \ref{fig:FMEA-methods} and the effort within this work is limited. The goal is then to develop a primary heuristic that can deliver results whose primary purpose is to actually exist and not still be stuck in development. Additional important factors also are the FMEA-method's actual performance. Possible issues arise while comparing reliability. Especially in aerospace with multiple independent axes a false correlation may be detected due to circumstances. E.g. for a flight performing multiple consecutive landings it is possible for the Distance Measuring Equipment (DME) measuring distance to the airport to correlate with altitude and speed since all decrease and increase simultaneously. Simultaneously, employing no/low knowledge models enables rapid results eliminating the need for any degree of system knowledge.
+Within this endeavor it however needs to be considered that this summary of FMEA methods barely scratches the surface. Far more FMEA variations exist than shown in Figure \ref{fig:FMEA-methods} and the effort within this work is limited. The goal is then to develop a primary heuristic that can deliver results whose primary purpose is to actually exist and not still be stuck in development. Additional important factors also are the FMEA-method's actual performance. Possible issues arise while comparing reliability. Especially in aerospace with multiple independent axes a false correlation may be detected due to circumstances. E.g. for a flight performing multiple consecutive landings it is possible for the Distance Measuring Equipment (DME) measuring distance to the airport to correlate with altitude and speed since all decrease and increase simultaneously. Simultaneously, employing no/low knowledge models enables rapid results eliminating the need for any degree of system knowledge.
 
 
 \begin{table}[h]
@@ -542,8 +543,7 @@ In Table \ref{tab:lvl3_fmea_comparison} the introduced FMEA-schemas are evaluate
 % -->python implementation with dynamically modifiable configuration
 
 \subsection{Context within Aerospace Applications}
-The previously mentioned subset that will be examined within this work is the altitude of the aircraft. In the ISTAR the altitude can be determined by using the barometric altitude and the altitude determined by the Global Navigation Satellite System (GNSS). To implement a Parity Equation the system knowledge needed to create these models is introduced.
-In the following the exemplary implementation of a barometric system is presented followed by considerations needing to be made when examining the GNSS system and comparing it to the barometric system.
+The previously mentioned subset that will be examined within this work is the altitude of the aircraft. In the ISTAR the altitude can be determined by using the barometric altitude and the altitude determined by the Global Navigation Satellite System (GNSS). To implement a Parity Equation the system knowledge needed to create these models is introduced. In the following the exemplary implementation of a barometric system is presented followed by considerations needing to be made when examining the GNSS system and comparing it to the barometric system.
 
 \subsubsection{Barometric Altitude}
 % TODO: check nomenclature index
@@ -618,7 +618,7 @@ The following equation \ref{eq:h_baro_Tconst} then resolves for the altitude bas
 
 \paragraph{Logic Flow}
 
-The process to then actually calculate a barometric altitude is displayed in figure \ref{flow:ISA}. The input is p and $p_0$ with p being the measured pressure via the aircraft's static ports and $p_0$ being the reference pressure that is manually set by the pilot with the standard pressure being $p_{std} = 1013.25$hPa which varies depending to the weather.
+The process to then actually calculate a barometric altitude is displayed in Figure \ref{flow:ISA}. The input is p and $p_0$ with p being the measured pressure via the aircraft's static ports and $p_0$ being the reference pressure that is manually set by the pilot with the standard pressure being $p_{std} = 1013.25$hPa which varies depending to the weather.
 
 
 \begin{figure}[h]
@@ -662,8 +662,7 @@ The process to then actually calculate a barometric altitude is displayed in fig
 In step 1 the current atmospheric layer gets found by matching the MSL-pressure ratio  $\frac{p}{p_0}$ to precalculated boundary values of layers based on table \ref{tab:isa_temp}. After determining the layer and the value for temperature coefficient $a$, the altitude can quickly be determined by inserting layer properties as well as the pressure ratio into their respective altitude equation (step 3.1 and 3.2 in flowchart \ref{flow:ISA}). In the final step 4 the altitude is returned.
 
 \subsubsection{GNSS}
-In addition to the barometric altitude, the position of the ISTAR is also determined by the Global Navigation Satellite System (GNSS) in the aircraft.
-For reference, the aircraft altitude generally is defined as the displacement of the aircraft from Mean Sea Level (MSL). It is important to note that the earth can generally be described as an ellipsoid due to its rotational shape in a geodetic context resulting in a very close approximation of the earth's shape. However, varying density levels of the earth's crust cause the elevation and sea level to deviate from the ellipsoid shape. This results in a lopsided model that is modeled in the WGS84 (\cite{schwarz_wgs_1998}) system. This is also the altitude that the GNSS system measures. And it will be the reference altitude for the following calculations.
+In addition to the barometric altitude, the position of the ISTAR is also determined by the Global Navigation Satellite System (GNSS) in the aircraft. For reference, the aircraft altitude generally is defined as the displacement of the aircraft from Mean Sea Level (MSL). It is important to note that the earth can generally be described as an ellipsoid due to its rotational shape in a geodetic context resulting in a very close approximation of the earth's shape. However, varying density levels of the earth's crust cause the elevation and sea level to deviate from the ellipsoid shape. This results in a lopsided model that is modeled in the WGS84 (\cite{schwarz_wgs_1998}) system. This is also the altitude that the GNSS system measures. And it will be the reference altitude for the following calculations.
 % todo: will this actually be the altitude that will be measured. Isnt the barometric altitude the one to be used? Perhaps differentiate into "reference altitude" for the reference model
 
 Possible errors for each are:
@@ -674,9 +673,7 @@ Possible errors for each are:
 \end{tabular}
 
 %todo: von christina: errors in human factors: wrong QNH setting
-%todo: introduce WGS84
-Going into WGS84 and the GNSS Altitude however exceeds the scope of this work. In the following, the satellite altitude above Mean Sea Level (MSL) is considered as the reference altitude. Fault detection algorithms within GNSS are described as Receiver Autonomous Integrity Monitoring (RAIM) and are tried and tested within GNSS implementations since high accuracy positioning is valuable for various applications, reaching precisions of up to a few centimeters. Explaining the full function of position calculation exceeds this works' scope. To summarize however, GNSS inputs form an overdefined system of equations which needs to be compensated within some algorithm to form one position based on multiple inputs. \cite{teunissen_springer_2017}
-
+Going into the standardized World Geodetic System (WGS84, \cite{teunissen_springer_2017}) and the GNSS Altitude however exceeds the scope of this work. In the following, the satellite altitude above Mean Sea Level (MSL) is considered as the reference altitude. Fault detection algorithms within GNSS are described as Receiver Autonomous Integrity Monitoring (RAIM) and are tried and tested within GNSS implementations since high accuracy positioning is valuable for various applications, reaching precisions of up to a few centimeters. Explaining the full function of position calculation exceeds this works' scope. To summarize however, GNSS inputs form an overdefined system of equations which needs to be compensated within some algorithm to form one position based on multiple inputs. \cite{teunissen_springer_2017}
 
 \subsubsection{Summary}
 %summarize
@@ -702,7 +699,7 @@ Data handling as well as structuring the data is essential for fulfilling FAIR c
 
 \subsection{FAIR guiding principles}
 
-Standardized data handling and following of conventions in regard of data structures always directly clashes with the desire to optimize data structures, making them more efficient, dynamic as well as developing them further. Were data structures once used as purely SQL (tabular format) this has now expanded into a wide array of data structures that are tightly knit into the needs and requirements of their application. Starting from tree structures, going into graph-theory and furthering into unstructured paradigms, these approaches represent the tradeoff between standardization and accurate data representation. The following paragraph discusses the use of FAIR principles to satisfy the standardization aspect while also allowing flexibility within the system to represent the underlying physical systems. The full FAIR principles are shown in figure \ref{fig:FAIR} detailing the single steps associated with each of the four grand principles.\cite{wilkinson_fair_2016}
+Standardized data handling and following of conventions in regard of data structures always directly clashes with the desire to optimize data structures, making them more efficient, dynamic as well as developing them further. Were data structures once used as purely SQL (tabular format) this has now expanded into a wide array of data structures that are tightly knit into the needs and requirements of their application. Starting from tree structures, going into graph-theory and furthering into unstructured paradigms, these approaches represent the tradeoff between standardization and accurate data representation. The following paragraph discusses the use of FAIR principles to satisfy the standardization aspect while also allowing flexibility within the system to represent the underlying physical systems. The full FAIR principles are shown in Figure \ref{fig:FAIR} detailing the single steps associated with each of the four grand principles.\cite{wilkinson_fair_2016}
 \begin{figure}[h]
     \centering
     \includegraphics[width=\textwidth]{FAIR}
@@ -720,8 +717,7 @@ FAIR principles have been published in 2016 by \textcite{wilkinson_fair_2016}. T
 FAIR essentially acknowledges that data analytics have come so far that the data analysis has become very effortless. So effortless however, that a major part of data science consists of formatting and acquiring data. To circumvent this issue in the future and also learn from past data it is then vital to guarantee FAIR principles. This allows to leverage current technology to automate analysis and enable detection of previously undetected correlations within datasets.
 
 \subsubsection{SI-Units}
-%TODO:perhaps small intro of SI
-Units, especially within aerospace contexts, are far from standardized. Most scientific users prefer SI-units. However, the convention for Pilots and Flight Test Engineers remains imperial within units such as feet, Nautical Miles, knots and so on. Naturally SI-units are chosen for calculations since calculations are more efficient as well as less prone to errors in SI-systems. Within this work, base SI-units will be used (e.g. m, s, N, kg, Pa).
+Units, especially in aerospace contexts, are far from standardized. Most scientific users prefer the International System of Units (SI) due to its ease of use and lack of conversion factors \cite{newell_international_2019}. However, the convention for Pilots and Flight Test Engineers remains imperial within units such as feet, Nautical Miles, knots and so on due to their prominent use in aviation. Naturally SI-units are chosen for the calculations in this work since calculations in SI-units are more efficient as well as less prone to errors. Within this work, the base 1 SI-units will be used (e.g. m, s, N, kg, Pa).
 
 \subsection{Methods}
 %todo: remove "we"
@@ -766,17 +762,14 @@ Flight test data needs to be perceived within the context of its circumstances t
 \subsubsection{Metadata exchange format}
 \label{chap:2-metadata-format}
 
-Aiming for a standardized machine-readable data format the SensOr Interfacing Language (SOIL) is examined. The aircraft data as shown in figure \ref{fig:digecat_data_sources} is varied in format and shape. For this work however, we need a data format that is able to handle and represent the intricate details of the aircraft precisely. For the various sources, a metadata enrichment step might be practicable. Effectively, this would act as a metadata importer that fuses metadata and also translates it into SOIL.
+Aiming for a standardized machine-readable data format the SensOr Interfacing Language (SOIL) is examined. The aircraft data as shown in Figure \ref{fig:digecat_data_sources} is varied in format and shape. For this work however, a data format is needed that is able to handle and represent the intricate details of the aircraft precisely. For the various sources, a metadata enrichment step might be practicable. Effectively, this would act as a metadata importer that fuses metadata and also translates it into SOIL.
 
 %□ DAQ-config □ Aircraft config and parameter info □ Metadata enrichment --> SOIL
-\section{Data Parsing}
-%TODO: migrate to "meet the istar" chapter
 
-%Since the SHM has to run on something, the original data is briefly mentioned for completeness.
+\subsubsection{Data Parsing}
+Another pillar of this work will be the format the original data is available in. The data the SHM will work on originates from the ISTAR and needs to uploaded without any modification to preserve originality and reduce the room for errors. This small section will deal with the handling of data from the aircraft until it reaches its destination in the skystash.
 
-Since the data the SHM will work on originates from the airplane and needs to uploaded without any modification to preserve originality this small section will deal with the handling of data from the aircraft until it reaches its destination in the skystash.
-
-The Data is uploaded to the stash from the aircraft DAQ format. Its data is available in the proprietary IMC .raw formats. These are then parsed into the stash by converting them into timeseries for each parameter. The data structure used in the skystash is represented in figure \ref{fig:skystash_folder_structure}. The folder structure's main path is the project folder which represents the project in which the flight was performed in and contains all the project's flights. Each flight then contains parameter measurements which represent the lowest level of objects in the architecture. All objects of project, flight or measurement type can also contain JSON-usertags as well as additional data in binary format such as pdf files.
+Firstly, the Data is uploaded to the stash from the aircraft DAQ format. Its data is available in the proprietary IMC \textit{.raw} formats. These are then parsed into the stash by converting them into timeseries for each parameter. The data structure used in the skystash is represented in Figure \ref{fig:skystash_data_pipeline}. The folder structure's main path is the project folder which represents the project in which the flight was performed in and contains all the project's flights. Each flight then contains parameter measurements which represent the lowest level of objects in the architecture. All objects of project, flight or measurement type can also contain JSON-usertags as well as additional data in binary format such as pdf files.
 
 
 %\subsection{Parsing of ISTAR Data}
@@ -784,24 +777,21 @@ The Data is uploaded to the stash from the aircraft DAQ format. Its data is avai
 %The data is present in the shape of Projects->Collections->Series
 
 
-To provide a full overview of the entire pipeline this step is mentioned. Starting off, we are left with a directory full of .raw and .imcexp files after a flight. Both are proprietary IMC formats. However, we can distinguish between both insofar that .raw files contain timeseries in an encoded format. The imcexp files then contain the configuration settings for the specific flight/measurement.
+To provide a full overview of the entire pipeline this step is mentioned. After a flight, the data is stored as a directory full of \textit{.raw} and \textit{.imcexp} files after a flight. Both are proprietary IMC formats with the \textit{.raw} files containing the actual timeseries in an encoded format and the \textit{.imcexp} files then contain the configuration settings for the specific flight or measurement.
 
-The entire directory then gets parsed by a python script. Segmenting the binary structure of the raw files and extracting the timeseries for each parameter. The DAQ and aircraft sensor config for each flight gets exported from the imcexp file and uploaded to the skystash without modification to preserve genuineness of the data as shown in figure \ref{fig:skystash_data_pipeline}. Any Metadata in shape of a JSON format is represented with a red dot and any binary formats such as pdf files or other custom data are represented with a blue dot.
+The entire directory then gets parsed by a python script. Segmenting the binary structure of the raw files and extracting the timeseries for each parameter. The DAQ and aircraft sensor configuration for each flight gets exported from the imcexp file and uploaded to the skystash without modification to preserve genuineness of the data as shown in Figure \ref{fig:skystash_data_pipeline}. Any Metadata in shape of a JSON format is represented with a red dot and any binary formats such as pdf files or other custom data are represented with a blue dot.
 
 \begin{figure}
     \centering
     \includegraphics[width=0.8\textwidth]{skystash_data_pipeline}
-    \caption{Pipeline of parsing and uploading the skystash data to the skystash without modification}
+    \caption[FTI-Microservices: Data Provision]{Pipeline preceding the data provisioning step shown in Figure \ref{fig:SHM_simplified} which consists of parsing the proprietary \textit{.raw} (data) and \textit{.imcexp} (metadata) files provided by the DAQ into a standardized format that is then available in the skystash. The internal skystash structure is also shown which consists of three distinct hierarchical levels for research projects which are structured into single flights (recording sessions) which then contain sensor measurements in time-series format. All metadata that exists next to the actual time-series can exist in a JSON-format (shown in red) as well as in an uninterpreted raw format (blue).}
     \label{fig:skystash_data_pipeline}
 \end{figure}
 
-Parameters are saved under the flight object. Config data is assigned to the user tags of each parameter. The data is then parsed for each flight and inherent sensor.
-The ISTAR DAQ metadata is currently the only metadata in the skystash. Since this metadata needs further information to make it understandable it will be enriched further within the Configuration step (See figure \ref{fig:fti_microservices}).
-
-\newpage
+Parameters are saved under the flight object. Configuration data is assigned to the user tags of each parameter. The data is then parsed for each flight and inherent sensor. The ISTAR DAQ metadata is currently the only metadata in the skystash. Since this metadata needs further information to make it understandable it will be enriched further within the Configuration step (See Figure \ref{fig:fti_microservices}).
 
 \subsubsection{Use of FAIR in the implementation}
-To now fulfill FAIR principles, we examine the interfaces in the architecture. The generated flight test data is available and metadata is already in a JSON-file format. To further specify and standardize metadata we can translate metadata into SOIL to further Interoperability. This enriched metadata then can be fed into the FMEA step. Exiting the FMEA-step, the Analysis results can also be defined within a SOIL/JSON format and then get opened by other applications to access data quality results and perform further analysis steps, increasing Reusability.
+To now fulfill FAIR principles, the interfaces in the architecture are examined. The generated flight test data is available and metadata is already in a JSON-file format. To further specify and standardize metadata the metadata can be translated into a standardized format to further Interoperability. This enriched metadata then can be fed into the FMEA step. Exiting the FMEA-step, the Analysis results can also be defined within a SOIL/JSON format and then get opened by other applications to access data quality results and perform further analysis steps, increasing Reusability.
 
 %Explain which means are taken to guarantee an architecture throughout the work that ensures an implementation of the FAIR principles and the V-model. Architecture of the JSON-Tree structure and which data is inserted where.
 
@@ -810,9 +800,9 @@ By implementing standardized JSON-data structures for the metadata including dat
 \newpage
 
 
-\section{SHM results config}
+\section{SHM results configuration}
 
-Within the last step of the FMEA, the generated report results need to be analyzed which in turn might necessitate change of the FMEA parameters. To facilitate the process and lower the barrier of entry, the possibility of an interactive report/dashboard is examined with the ultimate goal to output a report that is clear, concise and standardized.
+Within the last step of the FMEA, the generated report results need to be analyzed which in turn might necessitate change of the FMEA parameters. To facilitate the process and lower the barrier of entry, the possibility of an interactive report respectively dashboard is examined with the ultimate goal to output a report that is clear, concise and standardized.
 
 %\subsection{Challenges}
 
@@ -822,6 +812,5 @@ The requirements for such a report are firstly motivated by necessity. It is vit
 \section{Summary}
 In chapter 2 the fundamental definitions for system behavior from the field of control theory have been set forth as standardized descriptors of this work. The theoretical foundation has been created for this work by explaining methods from the field of FMEA and Parity Equations have been chosen for the further use in this work. Furthermore, the software-side of this work has been introduced. With metadata frameworks and the skystash platform forming the infrastructure that this work rests on. The learnings from the metadata models within the SOIL infrastructure and the ontology field have been examined and will be implemented in the following. FAIR principles have been presented and have been contextualized within this work. Building upon these fundamentals the next chapter will present an in-depth problem description followed by Chapter \ref{chap:4-methods} presenting the implementation details as well as the implemented methods in this work.
 
-%TODO: chapter 2 summary. talking points:intro, definitions, algorithms, metadata, results
 
 
