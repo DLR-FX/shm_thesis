@@ -4,26 +4,26 @@
 \chapter{State of the Art}
 \label{chap:2}
 Chapter \ref{chap:2} introduces the theoretic baselines for data acquisition, data metrics as well as standardized data formats in which to save metadata. Topics to consider when starting the Sensor Health Monitoring process are mainly that of providing a structured overview of the Sensor Metadata which in itself consists of many layers as a dynamically generated set of metadata is desired. This is motivated by the desire to represent changing Data Acquisitioning (DAQ) System configuration changes in the metadata system. Consideration is given to the SOIL data model and its' ability to handle the many demands that are expected of sensor data management. \cite{behrens_domain-specific_2021}
-The second major part to consider is that of physical cross relations and deep checks which are an experimental mode of checking for inconsistencies among the data. Major research and implementation work shall go into developing a dynamic model that is generated from the data and then checks back upon the data for possible discrepancies. This approach is chosen as it is estimated to be the most structured approach for a first prototype.
+The second major part to consider is that of physical cross relations and deep checks which are an experimental mode of checking for inconsistencies among the data. Major research and implementation work goes into developing a dynamic model that is generated from the data and then checks back upon the data for possible discrepancies. This approach is chosen as it is estimated to be the most structured approach for a first prototype.
 
 
 \section{The ISTAR}
 \label{chap:meet_the_istar}
 %Todone: explain the istar system, DAQ and possible error locations in the complex system
-The data itself is the essence of this work. The data used in this work is recorded in the ISTAR aircraft, a Falcon 2000LX. Since 2019 it is part of the DLR's research aicraft fleet (see Figure \ref{fig:dlr_fleet}). The ISTAR possesses a large databus with over 40,000 parameters that are essential to transmit system info of singular aircraft components to the Flight Management Computer (FMC) and other recipients within the aircraft. These parameters consist of Primary aircraft data such as sensor measurements but a majority of the parameters consists of secondary derived data and status bits that are present in various SI-units and imperial aerospace units as well as data formats ranging from Boolean values to . The special part of the ISTAR's customization lies within its recording of aircraft bus parameters which allows to retroactively analyze flights. Facilitated by a DAQ that listens to the main aircraft bus over 400 sensor parameters are recorded per flight.
+The data itself is the essence of this work. The data used in this work is recorded in the ISTAR aircraft, a Falcon 2000LX. Since 2019 it is part of the DLR's research aicraft fleet (see Figure \ref{fig:dlr_fleet}). The ISTAR possesses a large databus with over 40,000 parameters that are essential to transmit system info of singular aircraft components to the Flight Management Computer (FMC) and other recipients within the aircraft. These parameters consist of Primary aircraft data such as sensor measurements but a majority of the parameters consists of secondary derived data and status bits that are present in various SI-units and imperial aerospace units as well as data formats ranging from Boolean values to integers, floats and strings. The special part of the ISTAR's customization lies within its recording of aircraft bus parameters which allows to retroactively analyze flights. Facilitated by a DAQ that records the main aircraft bus, an additional inertial positioning unit, experimental aeroelastic sensors and the noseboom over 400 sensor parameters are recorded per flight.
 
 \begin{figure}
     \centering
     \includegraphics[width=0.7\textwidth]{dlr_fleet.jpeg}
-    \caption{The DLR's research fleet \cite{dlr_dlr-fleet_2018} lined up for a photo shoot at the DLR Brunswick site}
+    \caption{The DLR's research aircraft fleet \cite{dlr_dlr-fleet_2018} lined up for a photo shoot at the DLR Brunswick site}
     \label{fig:dlr_fleet}
 \end{figure}
 
-The ISTAR will be examined since its measurement data for Digital Twin applications needs to be certified in respect to its data quality. The aircraft system itself is tested and sensor errors are displayed to the pilots during the flight. However, there is no way to record these error messages and modify the fault detection algorithms to the custom experimental sensors. In addition, the DAQ is configured to be safe within the aircraft and not spontaneeously catch fire or detriment flight conditions but it is not configured to also provide data reliably with a standard reliability of $10^{-6}$. This further motivates the desire for an open SHM to further data knowledge and insights.
+The ISTAR will be examined since its measurement data for Digital Twin applications needs to be certified in respect to its data quality. The aircraft system itself is tested and sensor errors are displayed to the pilots during the flight. However, there is no way to record these error messages and modify the fault detection algorithms to the custom experimental sensors. In addition, the DAQ hardware is certified to be safe within the aircraft (e.g. electromagnetic compatibility, avoiding spontaneous inflammation) to refrain from detrimenting flight conditions but it is not configured to also provide data reliably with a standard reliability of $10^{-6}$. This further motivates the desire for an open SHM to further data knowledge and insights.
 
 \subsection{System overview}
 
-The ISTAR's data acquisitioning system (DAQ) is the hub to record and centralize all aircraft data and will be regarded as the focal element of this work. As previously mentioned the DAQ is not tested up-to aircraft standards. Because fault detection is shown in the cockpit during the flight but is not recorded in the DAQ it is necessary to implement such a fault detection. The data flow within the aircraft is complex and nested. The DAQ firstly taps into the main aircraft bus that is within the Avionics Standard Communications Bus, Version D (ASCB-D) as well as the aeroelastic sensors, the Nose-Boom and a highly precise additionally installed combined Inertial-Navigation-System (IMS) and Geodetical Navigation Satellite System (GNSS). As any other aircraft, the necessity of various reference systems is necessary. Generally, the geodetic, aerodynamic, airframe-fixed and track-fixed coordinates system are used \cite{brockhaus_flugregelung_2011}. These compensate various effects and facilitate interpretation of various primary and secondary parameter values
+The ISTAR's data acquisitioning system (DAQ) is the hub to record and centralize all aircraft data and will be regarded as the focal element of this work. As previously mentioned the DAQ is not tested up-to aircraft standards. Because fault detection is shown in the cockpit during the flight but is not recorded in the DAQ it is necessary to implement such a fault detection. The data flow within the aircraft is complex and nested. The DAQ firstly taps into the main aircraft bus that is within the Avionics Standard Communications Bus, Version D (ASCB-D) as well as the aeroelastic sensors (strain gauges and accelerometers), the Nose-Boom (instrumentation to measure undisturbed airflow) and a highly precise additionally installed combined Inertial-Navigation-System (IMS) and Geodetical Navigation Satellite System (GNSS). As any other aircraft, the necessity of various reference systems is necessary. Generally, the geodetic, aerodynamic, airframe-fixed and track-fixed coordinates system are used \cite{brockhaus_flugregelung_2011}. These compensate various effects and facilitate interpretation of various primary and secondary parameter values
 
 \subsection{Sensor to DAQ}
 % pitot tube, sampling, to DAQ
@@ -32,15 +32,16 @@ In the following, an exemplary flow of information from a Pitot Tube is describe
 \begin{figure}[h]
     \centering
     \includegraphics[width=\textwidth]{istar_wires}
-    \caption[The ISTAR crosssection displaying sensor information flow]{The ISTAR data flow with a Pitot Tube (PT) sending its data to the ASCB-D bus and then to the DAQ. Each entity of the flow applies its own sampling of data.}
+    \caption[The ISTAR crosssection displaying sensor information flow]{The ISTAR data flow with a Pitot Tube (PT) sending its data to the ASCB-D bus via the Air Data System (not shown) and then to the DAQ. Each entity of the flow applies its own sampling of data.}
     \label{fig:istar_wires}
 \end{figure}
 
 
 % todone: show data flow steps by matthew. Exemplary data flow for sensors including sampling rate and  reliability
-The Flight Test Data by the ISTAR gets recorded by a base DAQ system by IMC co. This base contains inputs from the main aircraft data bus, the experimental nose boom, experimental strain gauges and acc sensors as well as an experimental Inertial Measuring Unit (IMU) combined with a GNSS-System. In addition, complementary DAQs are added to fulfill given experiment requirements. In regard to system complexity it is notable that the main aircraft bus data originates from various sources, ranging from air data that gets measured by a sensor working on an electric current which then gets transformed by an Analog Digital Converter (ADC) into a digital, discretized signal which then gets fed into the main aircraft bus system. Such a signal would then get transmitted to the IMC DAQ, making troubleshooting a multifaceted problem within this system due to the multiple points of failure.
+The Flight Test Data by the ISTAR gets recorded by a base DAQ system by IMC co. This base contains inputs from the main aircraft data bus, the experimental nose boom, experimental strain gauges and acceleration sensors as well as an experimental Inertial Measuring Unit (IMU) combined with a GNSS-System. In addition, complementary DAQs are added to fulfill given experiment requirements. In regard to system complexity it is notable that the main aircraft bus data originates from various sources, ranging from air data that gets measured by a sensor working on an electric current which then gets transformed by an Analog Digital Converter (ADC) into a digital, discretized signal which then gets fed into the main aircraft bus system. Such a signal would then get transmitted to the IMC DAQ, making troubleshooting a multifaceted problem within this system due to the multiple points of failure.
 
 \subsection{State to Sensor}
+%todo: state to sensor klingt scheiße. Neue Überschrift nötig
 Within the following, some consideration is given to the inherent flaws lying in the actual measurement of state values. The Pitot Tube system from Figure \ref{fig:istar_wires} is examined in detail in Figure \ref{fig:signal_processing} showing the choices, experimenters need to make and the tradeoffs they inherit. An example is the sampling rate. Sampling at higher rates delivers much more precise results. It however also generates proportionally more data. It is then necessary to determine a sampling rate that is apt for each experiment. The Nyquist-Shannon sampling theorem is an aid in deciding the desired frequency since it establishes that the sampling frequency can only detect signals that are less than half its frequency as shown in Equation \ref{eq:nyquistshannon}. \cite{smith_scientist_1999}
 \begin{equation}
     f_{sampling} > 2 \cdot f_{max}
@@ -83,7 +84,7 @@ Motivating this section is the desire to understand the fundamental error mechan
 To find and detect errors it is firstly important to understand them. Within Table \ref{tab:system_props_isermann} errors are described as the difference between measurement and actual value as seen in Figure \ref{fig:basic_error}. Sensor are used to measure physical states in the world. But how precise do they measure? No sensor is without error, an inevitable property accompanying every sensor application. In the following, sensor errors are classified into categories upon which an understanding about data quality can be built that then can describe the data quality of the ISTAR datasets.
 \begin{table}[h]
     \centering
-    \caption[Error Type Overview]{A general overview over the three different Error Types. Systemic errors are errors which are predictable and can be modeled mathematically. To compensate systemic errors a calibration process can be applied which removes the entire systemic error. The second error type is the random error which occurs constantly and behaves unpredictably. Random Errors are generally also understood as white noise. Lastly, the failure forms the final type of error type. It signifies through relatively rare occurrence but a then fatal failure of the data source. A solution for random errors is redundancy of sensors and the mixing of single sensor values.  \cite{hartmann_navigation-sensordatenfusion_2022}}
+    \caption[Error Type Overview]{A general overview over the three different Error Types. Systemic errors are errors which are predictable and can be modeled mathematically. To compensate systemic errors a calibration process can be applied which removes the entire systemic error. The second error type is the random error which occurs constantly and behaves unpredictably. Random Errors are generally also understood as white noise. Lastly, the failure forms the final type of error type. It signifies through relatively rare occurrence but a then fatal failure of the data source. A solution for random errors is redundancy of sensors and the mixing of single sensor values.  \cite{hartmann_flugfuhrung_2022}}
     \begin{tabular}{@{}llll@{}}
         \toprule
         Error Type     & Appearance    & Occurrence & Compensation \\ \midrule
@@ -93,33 +94,33 @@ To find and detect errors it is firstly important to understand them. Within Tab
     \end{tabular}
     \label{tab:error_types}
 \end{table}
-
+\newpage
 
 Identifying sensor errors is the goal of this thesis. As described in Figure \ref{fig:basic_error} the error can be imagined as a disturbance added upon the original sensor value. Which then results in a skewed sensor measurement.
-\begin{figure}[b]
+
+In Table \ref{tab:error_types} sensor errors are divided into 3 subcategories which are classified by their appearance representing their manageability. Deterministic Errors can be easily compensated since they are reproduceable. Stochastic Errors however are non-deterministic. Figure \ref{fig:sensor_errors_systemic} gives an overview over systemic errors which generally are compensated by using calibration mechanisms in practical applications. The sensors within this work are assumed to be calibrated so this property is solely mentioned for completeness. However, perhaps some new understandings may be gained after a full SHM routine has been implemented since accuracy of calibration specifications is only as accurate as previously specified by the operator.
+
+\begin{figure}[h]
     \centering
     \includegraphics[width=0.5\textwidth]{basic_error}
     \caption{A sensor measurement is always the result of the actual true value plus a measuring error.}
     \label{fig:basic_error}
 \end{figure}
-In Table \ref{tab:error_types} sensor errors are divided into 3 subcategories which are classified by their appearance representing their manageability. Deterministic Errors can be easily compensated since they are reproduceable. Stochastic Errors however are non-deterministic. Figure \ref{fig:sensor_errors_systemic} gives an overview over systemic errors which generally are compensated by using calibration mechanisms in practical applications. The sensors within this work are assumed to be calibrated so this property is solely mentioned for completeness. However, perhaps some new understandings may be gained after a full SHM routine has been implemented since accuracy of calibration specifications is only as accurate as previously specified by the operator.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.4\textwidth]{sensor_errors_systemic}
-    \caption[Systemic Sensor Errors]{The types of systemic sensor errors introduced in Table \ref{tab:error_types} are shown by plotting the measured value over the true value. \cite{hartmann_navigation-sensordatenfusion_2022, din_din_1995} }
-    \label{fig:sensor_errors_systemic}
-\end{figure}
 
 %todo: backlog: fehlerarten besser erklären
 Errors that also occur continuously are random errors that are however unpredictable in their behavior. To compensate those errors, filtering can be applied by e.g., high- or lowpassfiltering. The final error type mentioned in Table \ref{tab:error_types} is sensor failure. This is characterised as a spontaneous event in which the sensor information stream is completely interrupted.
 
-
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.4\textwidth]{sensor_errors_systemic}
+    \caption[Systemic Sensor Errors]{The types of systemic sensor errors introduced in Table \ref{tab:error_types} are shown by plotting the measured value over the true value. \cite{hartmann_flugfuhrung_2022, din_fundamentals_1995} }
+    \label{fig:sensor_errors_systemic}
+\end{figure}
 % todo: im allgemeinen noch mehr zu abbildungen erzählen. mehr motivieren QEC?
 Now the question poses if errors can be pinpointed to their origin from where such errors arise. Generally, single sensors carry inherent errors such as clogged static ports (spontaneous hysteresis) or sensor drift (spontaneous bias) but errors also occur within the complex aircraft system architecture itself. An exemplary process step is the Analog to Digital Conversion. Sensor outputs are primarily analog but are then digitized in order to get transported by the aircraft data bus. This process is accomplished using an Analog Digital Converter (ADC), effectively eliminating information from the system. The full process is shown in Figure \ref{fig:signal_processing}.
 
 \subsection{Data Quality}
-% todo: kommentar einfügen: Oder ganz generell: Um erkennen zu können ob das gemessene Signal richtig sein können muss das Sastem wissen was es misst. Diese Information muss in maschinenlesbarer Form vorliegen
+% todo: kommentar einfügen: Oder ganz generell: Um erkennen zu können ob das gemessene Signal richtig sein können muss das System wissen was es misst. Diese Information muss in maschinenlesbarer Form vorliegen
 Foundation for this work lies within a common understanding of its results. Standardized qualifiers are found within control theory \cite{isermann_fault-diagnosis_2011} as well as GNSS applications \cite{teunissen_springer_2017}. Standardization is also found within the ISO-Database. However, when beginning to describe data quality within metadata, the issue of metadata quality itself also arises. In the following, a brief overview is given over descriptors and their qualities based on norms.
 
 \paragraph{A general introduction to Semantics}
@@ -132,7 +133,7 @@ Semantics is a broad term due to its common use. One definition that has found s
     \label{fig:semiotics}
 \end{figure}
 
-This gets developed further within ISO 8000-8: Data Quality \cite{iso_data-quality_information_2015}, concluding that syntactic qualities define the structure of the content language and semantic qualities define the structure of the content itself to allow verifying information. Whereas pragmatic qualities describe the use that can be extracted from the content itself hence allowing validation.
+This gets developed further within ISO 8000-8: Data Quality \cite{iso_data_2015}, concluding that syntactic qualities define the structure of the content language and semantic qualities define the structure of the content itself to allow verifying information. Whereas pragmatic qualities describe the use that can be extracted from the content itself hence allowing validation.
 
 Contextually, the metadata syntax of this work will be in a JSON-format. The used semantics will be standardized to use the SOIL (SensOr Interfacing Language) structure and pragmatics will be quantified by the validity of the actual metadata. Moving on from these fundamental concepts, the pragmatic data qualities will be defined in the following.
 
@@ -140,7 +141,7 @@ Contextually, the metadata syntax of this work will be in a JSON-format. The use
 
 Unambiguous terms are needed to provide clear and concise information within the sensor health monitoring data structure. This is especially important to create a common base of understanding. In the following, industry standards and definitions for data metrics are summarized.
 
-Definitions based on a control theory background are shown in table \ref{tab:system_props_isermann}. These have been agreed upon in discussion with VDI and VDE committees as well as the Reliability, Availability and Maintainability (RAM) dictionary. \cite{isermann_trends_nodate,din_din25424_fehlerbaumanalysepdf_1977}
+Definitions based on a control theory background are shown in table \ref{tab:system_props_isermann}. These have been agreed upon in discussion with VDI and VDE committees as well as the Reliability, Availability and Maintainability (RAM) dictionary. \cite{isermann_trends_1997,din_fault_1977}
 
 These terms are divided into the contextual categories of primarily defining signal and state descriptors. Next up are functions for fault processing followed by model attributes that are employed to compare them to the actual system. System properties can then be inferred by leveraging the previous descriptors for states, functions and models. Illustrating the fault detection process, Figure \ref{fig:basic_error_filter} shows the method generating a residual which in turn enables interpretation of said residual which may contain information to isolate and identify the error.
 
@@ -155,16 +156,16 @@ These terms are divided into the contextual categories of primarily defining sig
 
 
 
-Further definitions are also employed by the Federal Aviation Administration (FAA) adding integrity as an attribute for GNSS systems that is a quantifier for trust that can be put into the system's measurements. Providing users with warnings when measurements are expected to be unreliable. \cite[B.1.5, B.1.10]{faa_federal_radionavigation_plan_2008}
+Further definitions are also employed by the Federal Aviation Administration (FAA) adding integrity as an attribute for GNSS systems that is a quantifier for trust that can be put into the system's measurements. Providing users with warnings when measurements are expected to be unreliable. \cite[B.1.5, B.1.10]{federal_aviation_administration_federal_2008}
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.7\textwidth]{dart_boards}
-    \caption[Data Quality Dartboards]{Dart boards displaying the Precision (as $\sigma$), Trueness (as $\mu$) and Accuracy as the cumulative sensor quality \cite{iso_iso5725-1_accuracy_1997}}
+    \caption[Data Quality Dartboards]{Dart boards displaying the Precision (as $\sigma$), Trueness (as $\mu$) and Accuracy as the cumulative sensor quality \cite{iso_accuracy_1997}}
     \label{fig:dart_boards}
 \end{figure}
 
-Following the GNSS domain, the terms accuracy and precision are important measures for quantifying results. For representation, a dart board is illustrated in Figure \ref{fig:dart_boards}. It is then important to distinguish that good accuracy is the result of good precision as well as a good trueness. A mathematical description for the precision could be the standard deviation and the deviation of mean and actual value as the trueness. \cite{iso_iso5725-1_accuracy_1997}\cite[S.33ff.]{smith_scientist_1999}
+Following the GNSS domain, the terms accuracy and precision are important measures for quantifying results. For representation, a dart board is illustrated in Figure \ref{fig:dart_boards}. It is then important to distinguish that good accuracy is the result of good precision as well as a good trueness. A mathematical description for the precision could be the standard deviation and the deviation of mean and actual value as the trueness. \cite{iso_accuracy_1997}\cite[S.33ff.]{smith_scientist_1999}
 
 
 
@@ -349,7 +350,7 @@ With the limits of correlation being -1 for total inversely proportional correla
 
 \subsubsection{Summary and Motivation}
 
-Based upon this groundwork methods for the three levels of the SHM are proposed. State of the Art solutions are discussed for each Level based on the common statistical methods proposed in the previous section.
+Based upon this groundwork, methods for the three levels of the SHM are proposed. State of the Art solutions are discussed for each Level based on the common statistical methods proposed in the previous section.
 
 \subsection{Check 1: Existence}
 In the first Level of the SHM it is checked whether parameter data exists in the database. This is checked by comparing the DAQ-configuration to the actually measured data. Within step two, single sensor signals are examined by themselves, saving resources by iteratively working on each sensor. This approach also allows easy parallelization of tasks due to the encapsulation of each task. Step three allows the integration and correlation of different sensor signals. Allowing more complex FMEA systems.
@@ -453,7 +454,6 @@ Novel developments in control theory port methods from previous applications in 
 
     Following the recipe for a modeled aircraft based on sensor data $y$ the parameters $x$ and $u$ of the aircraft are attempted to be simulated. \textcite{aljanaideh_aircraft_2015} shows that this approach works for linking the angular velocities for the aircraft axes $\omega_x$, $\omega_y$, $\delta_{drift}$(drift angle) with $\omega_z$. The examined approaches include the transmissibility function $\mathcal{T}$ that models the system output without having to take the unknown system input into consideration.
 
-    %+TODO?: include more detailed examples. lol fuck
 
     \item[Utilization]\hfill
 
@@ -509,7 +509,7 @@ Another method for system modelling lies in grey box models. The "grey" attribut
 
 \subsubsection{FMEA Evaluation}
 
-An algorithm for evaluating data quality in level 3 must now be found based on these state of the art approaches. \textcite{zhang_bibliographical_2008} presents a general overview over the field of FMEA which allows to be split into the two main categories of model and data-based methods which are dependent on the system knowledge that shall be introduced into the FMEA. Both then carry two fields within of quantitative and qualitative methods which get applied for conditional modeling and less stringent data types.
+An algorithm for evaluating data quality in Level 3 must now be found based on these state of the art approaches. \textcite{zhang_bibliographical_2008} presents a general overview over the field of FMEA which allows to be split into the two main categories of model and data-based methods which are dependent on the system knowledge that shall be introduced into the FMEA. Both then carry two fields within of quantitative and qualitative methods which get applied for conditional modeling and less stringent data types.
 \begin{figure}[h]
     \centering
     \includegraphics[width=1\textwidth]{FMEA_methods}
@@ -536,7 +536,6 @@ Within this endeavor it however needs to be considered that this summary of FMEA
 In Table \ref{tab:lvl3_fmea_comparison} the introduced FMEA-schemas are evaluated on their viability to use within this work. While PTF as well as other Grey-Box models exist, they need considerable effort within their primary implementation and then their respective training. Since the research and development of a novel, optimal FMEA is also not focal point of this work since it is rather more important to generate a holistic heuristic, solving first and foremost the basic problems associated with basic errors. Hence, Parity equations are chosen to be developed further within this work. Generating a dynamic model of the aircraft physical correlations that allows itself to be expanded for future use. It remains to be seen now, how well this work's architecture for integrating these FMEA may hold up in regard of testing these methods in future work.
 
 
-% TODO: luenberger observer,
 % state space:matrix impl. linear, very powerful+scalable,
 % Simulink: nonlinear, very powerful, license cost, not dynamically configurable -->manual interaction
 % FMEA python solutions: higher effort in implementation, dynamically automatable
@@ -546,7 +545,6 @@ In Table \ref{tab:lvl3_fmea_comparison} the introduced FMEA-schemas are evaluate
 The previously mentioned subset that will be examined within this work is the altitude of the aircraft. In the ISTAR the altitude can be determined by using the barometric altitude and the altitude determined by the Global Navigation Satellite System (GNSS). To implement a Parity Equation the system knowledge needed to create these models is introduced. In the following the exemplary implementation of a barometric system is presented followed by considerations needing to be made when examining the GNSS system and comparing it to the barometric system.
 
 \subsubsection{Barometric Altitude}
-% TODO: check nomenclature index
 For the Parity model, the barometric altitude is introduced to compare experimental pressure sensors with the aircraft's barometric altitude.
 
 The International Standard Atmosphere (ISA) is the conventional method of measuring an aircraft's altitude based on air pressure and the industry standard. \cite{iso_standard_1975} The method can be understood as a function of pressure and reference pressure (differing based on weather) which results in an altitude. The assumptions for each layer of the atmosphere are shown in table \ref{tab:isa_temp}.
@@ -687,7 +685,7 @@ The research within the general quality control field is generally very optimize
 
 In addition to detecting faults it is also necessary for a SHM to display faults to the systems operator. This may happen in the shape of a display interface or a dashboard that generates fault and reliability ratings. Condensing information for operators is also a necessary part of SHM since suspicious occurrences may be frequent and raw information about events is less helpful than already preprocessed data. This is what is now presented in the upcoming sections, first dealing with the structure in which the metadata will be handled and discussing the origin and destination of data in the SHM context.
 
-%Within this chapter various algorithms and methods that may be used to detect faults are presented first and then followed by considerations in the direction of metadata. Standards for metadata as well as new propositions are examined and the skystash architecture which is used for data hosting as well as analytic tasks is presented.
+%Within this chapter various algorithms and methods that may be used to detect faults are presented first and then followed by considerations in the direction of metadata. Standards for metadata as well as new propositions are examined and the Skystash architecture which is used for data hosting as well as analytic tasks is presented.
 \newpage
 
 
@@ -720,36 +718,31 @@ FAIR essentially acknowledges that data analytics have come so far that the data
 Units, especially in aerospace contexts, are far from standardized. Most scientific users prefer the International System of Units (SI) due to its ease of use and lack of conversion factors \cite{newell_international_2019}. However, the convention for Pilots and Flight Test Engineers remains imperial within units such as feet, Nautical Miles, knots and so on due to their prominent use in aviation. Naturally SI-units are chosen for the calculations in this work since calculations in SI-units are more efficient as well as less prone to errors. Within this work, the base 1 SI-units will be used (e.g. m, s, N, kg, Pa).
 
 \subsection{Methods}
-%todo: remove "we"
-Within this work it is then necessary to use standardized FAIR frameworks for data and metadata exchange. Since the skystash, a FAIR research data platform is already in development and in prototypical use within the DLR, the developed algorithm will be tested by working in conjunction with the skystash. To exchange data, the SOIL (SensOr Interfacing Language) framework will be examined for defining metadata of the aircraft and the FMEA logic itself.
+Within this work it is then necessary to use standardized FAIR frameworks for data and metadata exchange. Since the Skystash, a FAIR research data platform is already in development and in prototypical use within the DLR, the developed algorithm will be tested by working in conjunction with the Skystash. To exchange data, the SOIL (SensOr Interfacing Language) framework will be examined for defining metadata of the aircraft and the FMEA logic itself.
 
 %todo: include ssn ontology as reference. Perhaps use it as reference for graph metadata?
 %\cite{dey_organization_2015}
 
 \subsubsection{Skystash}
 \label{chap:skystash}
-The skystash is a platform to distribute, analyze and visualize large flight data sets. It is currently in development within the DLR's digital twin project and aims to be a service platform for uploading and sharing the DLR's flight test data. Various requirements are posed from different stakeholders. And large data sets necessitate a platform that can handle these file sizes.
+The Skystash is a platform to distribute, analyze and visualize large flight data sets. It is currently in development within the DLR's digital twin project and aims to be a service platform for uploading and sharing the DLR's flight test data. Various requirements are posed from different stakeholders. And large data sets necessitate a platform that can handle these file sizes. Driven by the FAIR guiding principles the Skystash has unique identifiers for each data point and has a powerful search query embedded in its database structure. Such a database also enables data operations since it eases implementation efforts due to the size of data upwards of 2GB per flight, which rapdidly slows down computing on computers with less memory.
 
 %Such as sampling rate. Flight guidance projects may be content with sampling rates as low as 1 Hz. Other stakeholders such as aeroelastic experts may require sampling rates as high as possible and may reach up to 2000Hz within the ISTAR. For this purpose, a dynamic data export is sensible in which users can directly choose sampling rates as well as single parameters from a flight contrary to downloading and working with a whole flight data set averaging up to 2GB of data.
 
 %\section{downloadfunctionalities}
 %file sizes too large --> Reduction for on demand parameters and resampling utility Handling of large data sets
 
-
-%todo: rough paragraph. fuck it all up
-What are skystash goals to implement, how does it generally work? ◊ Mongodb datastructure. Fixed structure of Project/Collection/Series for all flights. Enrichment with json-metadata as well as binary objects is possible. MongoDB is accessible via api and web client to mitigate user errors within the database. Data series are saved as numpy arrays. ◊ Nginx controls web traffic and accepts input via python API and the website and redirects it to ceycloak for authentification, angular frontend for displaying, and stashclient for accessing the database for performing data mutation or search operations using ist powerful search query.
-
-This guarantees safe handling and imposes rules that guarantee system safety.
+%What are Skystash goals to implement, how does it generally work?
+The Skystash internal architecture is presented in Figure \ref{fig:skystash_architecture}. A nginx web server builds the centerpiece of the Skystash. It controls web traffic and accepts inputs via a python API as well as the website and redirects it to a keycloak service of the DLR for authentification. After authentification the Stash Service processes the request that has been transferred by nginx and forwards it to the appropriate service and checks it for any errors. The Stash Service is generally the router for three different subsystems. Firstly a database in a mongoDB format which allows a hierarchical structuring of data and has a native powerful search query, improving Findability of data. Additional python appllications can be added to the backend for additional functionality such as upload or import modules for different data formats, allowing straightforward uploads for data. Thirdly, the Service Hub allows for Horizontal Scaling by controlling the docker containers used in the backend which encapsulate each subsystem of the Skystash. If nginx receives a request by the Web GUI it accesses the Web Gui provider to compile the web UI using an
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=\textwidth]{03_figures/stash_architecture}
-    \caption[The Skystash architecture \cite{arts_digital_2022}]{The Skystash architecture signifying the high coupling and low coherency by imlementing a REST API interface in order to spatially separate any interactions with the architecture. The backend of the skystash uses multiple microservices for different aspects of the software by Routing through the \textit{Stash Service} such as a MongoDB database for storage and python clients for applications. A Service Hub takes care of scaling the infrastructure as a whole. \cite{arts_digital_2022}}
+    \caption[The Skystash architecture \cite{arts_digital_2022}]{The Skystash architecture signifying the high coupling and low coherency by imlementing a REST API interface in order to spatially separate any interactions with the architecture. The backend of the Skystash uses multiple microservices for different aspects of the software by Routing through the \textit{Stash Service} such as a MongoDB database for storage and python clients for applications. A Service Hub takes care of scaling the infrastructure as a whole. \cite{arts_digital_2022}}
     \label{fig:skystash_architecture}
 \end{figure}
-%todo:explain picture better
 
-Flight test data needs to be perceived within the context of its circumstances to extract all its information. Hence the need for a digital twin. Within this context all necessary data shall be compounded to set a central starting point for data exploration and analysis. Figure \ref{fig:digecat_data_sources} shows all data sources that will be gathered. For this works context this means that necessary aircraft configuration data such as location of sensors is available (metadata) next to the actual generated data from the aircraft systems (data). This for the first time allows contextualizing flight data in one place. When previously various metadata and configuration info had to be manually collected, this whole process aims to minimize manual steps within the whole process. \cite{arts_digital_2022}
+Flight test data needs to be perceived within the context of its circumstances to extract all its information. Hence the need for a digital twin arises. Within this context all necessary data shall be compounded to set a central starting point for data exploration and analysis. Figure \ref{fig:digecat_data_sources} shows all data sources that will be gathered. For this works context this means that necessary aircraft configuration data such as location of sensors is available (metadata) next to the actual generated data from the aircraft systems (data). This for the first time allows contextualizing flight data in one place. When previously various metadata and configuration info had to be manually collected, this whole process aims to minimize manual steps within the whole process. \cite{arts_digital_2022}
 
 \begin{figure}[h]
     \centering
@@ -757,7 +750,6 @@ Flight test data needs to be perceived within the context of its circumstances t
     \caption[Components of the Digital Twin]{The different components of the ISTAR Digital Twin. The components not dealt with in this work include the \textit{DLR Internal Data} as well as the \textit{DLR External Data}. The components actually covered in this work include the \textit{Aircraft Internal Data} as previously mentioned in Chapter \ref{chap:meet_the_istar} including the Basic Measurement Equipment as well as the aeroelastic sensor system and the data from the nose boom. \cite{arts_digital_2022}}
     \label{fig:digecat_data_sources}
 \end{figure}
-%todo: explain picture better
 
 \subsubsection{Metadata exchange format}
 \label{chap:2-metadata-format}
@@ -767,9 +759,9 @@ Aiming for a standardized machine-readable data format the SensOr Interfacing La
 %□ DAQ-config □ Aircraft config and parameter info □ Metadata enrichment --> SOIL
 
 \subsubsection{Data Parsing}
-Another pillar of this work will be the format the original data is available in. The data the SHM will work on originates from the ISTAR and needs to uploaded without any modification to preserve originality and reduce the room for errors. This small section will deal with the handling of data from the aircraft until it reaches its destination in the skystash.
+Another pillar of this work will be the format the original data is available in. The data the SHM will work on originates from the ISTAR and needs to uploaded without any modification to preserve originality and reduce the room for errors. This small section will deal with the handling of data from the aircraft until it reaches its destination in the Skystash.
 
-Firstly, the Data is uploaded to the stash from the aircraft DAQ format. Its data is available in the proprietary IMC \textit{.raw} formats. These are then parsed into the stash by converting them into timeseries for each parameter. The data structure used in the skystash is represented in Figure \ref{fig:skystash_data_pipeline}. The folder structure's main path is the project folder which represents the project in which the flight was performed in and contains all the project's flights. Each flight then contains parameter measurements which represent the lowest level of objects in the architecture. All objects of project, flight or measurement type can also contain JSON-usertags as well as additional data in binary format such as pdf files.
+Firstly, the Data is uploaded to the stash from the aircraft DAQ format. Its data is available in the proprietary IMC \textit{.raw} formats. These are then parsed into the stash by converting them into timeseries for each parameter. The data structure used in the Skystash is represented in Figure \ref{fig:skystash_data_pipeline}. The folder structure's main path is the project folder which represents the project in which the flight was performed in and contains all the project's flights. Each flight then contains parameter measurements which represent the lowest level of objects in the architecture. All objects of project, flight or measurement type can also contain JSON-usertags as well as additional data in binary format such as pdf files.
 
 
 %\subsection{Parsing of ISTAR Data}
@@ -779,23 +771,23 @@ Firstly, the Data is uploaded to the stash from the aircraft DAQ format. Its dat
 
 To provide a full overview of the entire pipeline this step is mentioned. After a flight, the data is stored as a directory full of \textit{.raw} and \textit{.imcexp} files after a flight. Both are proprietary IMC formats with the \textit{.raw} files containing the actual timeseries in an encoded format and the \textit{.imcexp} files then contain the configuration settings for the specific flight or measurement.
 
-The entire directory then gets parsed by a python script. Segmenting the binary structure of the raw files and extracting the timeseries for each parameter. The DAQ and aircraft sensor configuration for each flight gets exported from the imcexp file and uploaded to the skystash without modification to preserve genuineness of the data as shown in Figure \ref{fig:skystash_data_pipeline}. Any Metadata in shape of a JSON format is represented with a red dot and any binary formats such as pdf files or other custom data are represented with a blue dot.
+The entire directory then gets parsed by a python script. Segmenting the binary structure of the raw files and extracting the timeseries for each parameter. The DAQ and aircraft sensor configuration for each flight gets exported from the imcexp file and uploaded to the Skystash without modification to preserve genuineness of the data as shown in Figure \ref{fig:skystash_data_pipeline}. Any Metadata in shape of a JSON format is represented with a red dot and any binary formats such as pdf files or other custom data are represented with a blue dot.
 
 \begin{figure}
     \centering
     \includegraphics[width=0.8\textwidth]{skystash_data_pipeline}
-    \caption[FTI-Microservices: Data Provision]{Pipeline preceding the data provisioning step shown in Figure \ref{fig:SHM_simplified} which consists of parsing the proprietary \textit{.raw} (data) and \textit{.imcexp} (metadata) files provided by the DAQ into a standardized format that is then available in the skystash. The internal skystash structure is also shown which consists of three distinct hierarchical levels for research projects which are structured into single flights (recording sessions) which then contain sensor measurements in time-series format. All metadata that exists next to the actual time-series can exist in a JSON-format (shown in red) as well as in an uninterpreted raw format (blue).}
+    \caption[FTI-Microservices: Data Provision]{Pipeline preceding the data provisioning step shown in Figure \ref{fig:SHM_simplified} which consists of parsing the proprietary \textit{.raw} (data) and \textit{.imcexp} (metadata) files provided by the DAQ into a standardized format that is then available in the Skystash. The internal Skystash structure is also shown which consists of three distinct hierarchical levels for research projects which are structured into single flights (recording sessions) which then contain sensor measurements in time-series format. All metadata that exists next to the actual time-series can exist in a JSON-format (shown in red) as well as in an uninterpreted raw format (blue).}
     \label{fig:skystash_data_pipeline}
 \end{figure}
 
-Parameters are saved under the flight object. Configuration data is assigned to the user tags of each parameter. The data is then parsed for each flight and inherent sensor. The ISTAR DAQ metadata is currently the only metadata in the skystash. Since this metadata needs further information to make it understandable it will be enriched further within the Configuration step (See Figure \ref{fig:fti_microservices}).
+Parameters are saved under the flight object. Configuration data is assigned to the user tags of each parameter. The data is then parsed for each flight and inherent sensor. The ISTAR DAQ metadata is currently the only metadata in the Skystash. Since this metadata needs further information to make it understandable it will be enriched further within the Configuration step (See Figure \ref{fig:fti_microservices}).
 
 \subsubsection{Use of FAIR in the implementation}
-To now fulfill FAIR principles, the interfaces in the architecture are examined. The generated flight test data is available and metadata is already in a JSON-file format. To further specify and standardize metadata the metadata can be translated into a standardized format to further Interoperability. This enriched metadata then can be fed into the FMEA step. Exiting the FMEA-step, the Analysis results can also be defined within a SOIL/JSON format and then get opened by other applications to access data quality results and perform further analysis steps, increasing Reusability.
+To now fulfill FAIR principles, the interfaces in the architecture are examined. The generated flight test data is available and metadata is already in a JSON-file format. To further specify and standardize metadata the metadata can be translated into a standardized format to further Interoperability. This enriched metadata then can be fed into the FMEA step. Exiting the FMEA-step, the Analysis results can also be defined within a SOIL/JSON format and then get opened by other applications to access data quality results and perform further analysis steps, increasing reusability.
 
 %Explain which means are taken to guarantee an architecture throughout the work that ensures an implementation of the FAIR principles and the V-model. Architecture of the JSON-Tree structure and which data is inserted where.
 
-By implementing standardized JSON-data structures for the metadata including dataset and report, interoperability as well as reusability are guaranteed. To increase Findability, the skystash architecture is used which generates a unique identifier for every dataset. \cite{meyer_development_2020}. By enriching metadata, findability as well as accessibility is guaranteed. And finally, converting to SI-units guarantees accessible, interoperable and reusable data.
+By implementing standardized JSON-data structures for the metadata including dataset and report, interoperability as well as reusability are guaranteed. To increase findability, the Skystash architecture is used which generates a unique identifier for every dataset. \cite{meyer_development_2020}. By enriching metadata, findability as well as accessibility is guaranteed. And finally, converting to SI-units guarantees accessible, interoperable and reusable data.
 
 \newpage
 
@@ -810,7 +802,7 @@ The requirements for such a report are firstly motivated by necessity. It is vit
 
 
 \section{Summary}
-In chapter 2 the fundamental definitions for system behavior from the field of control theory have been set forth as standardized descriptors of this work. The theoretical foundation has been created for this work by explaining methods from the field of FMEA and Parity Equations have been chosen for the further use in this work. Furthermore, the software-side of this work has been introduced. With metadata frameworks and the skystash platform forming the infrastructure that this work rests on. The learnings from the metadata models within the SOIL infrastructure and the ontology field have been examined and will be implemented in the following. FAIR principles have been presented and have been contextualized within this work. Building upon these fundamentals the next chapter will present an in-depth problem description followed by Chapter \ref{chap:4-methods} presenting the implementation details as well as the implemented methods in this work.
+In chapter 2 the fundamental definitions for system behavior from the field of control theory have been set forth as standardized descriptors of this work. The theoretical foundation has been created for this work by explaining methods from the field of FMEA and parity equations have been chosen for the further use in this work. Furthermore, the software-side of this work has been introduced. With metadata frameworks and the Skystash platform forming the infrastructure that this work rests on. The learnings from the metadata models within the SOIL infrastructure and the ontology field have been examined and will be implemented in the following. FAIR principles have been presented and have been contextualized within this work. Building upon these fundamentals the next chapter will present an in-depth problem description followed by Chapter \ref{chap:4-methods} presenting the implementation details as well as the implemented methods in this work.
 
 
 
